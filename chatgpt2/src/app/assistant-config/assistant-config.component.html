@@ -1,0 +1,22 @@
+<div>
+    <h2>Configurar Asistente</h2>
+    <form (ngSubmit)="saveConfig()">
+      <label>
+        Nombre del Asistente:
+        <input type="text" [(ngModel)]="assistantName" name="assistantName" required>
+      </label>
+      <br>
+      <label>
+        Instrucciones:
+        <textarea [(ngModel)]="instructions" name="instructions" required></textarea>
+      </label>
+      <br>
+      <label>
+        Archivo de Información:
+        <input type="file" (change)="onFileSelected($event)">
+      </label>
+      <br>
+      <button type="submit">Guardar Configuración</button>
+    </form>
+  </div>
+  
