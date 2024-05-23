@@ -9,6 +9,8 @@ export class OpenaiService {
   private apiUrl = 'http://localhost:3000/chat'; // Asegúrate de que esta URL coincide con la ruta de tu servidor
   private uploadUrl = 'http://localhost:3000/upload';
   private speechUrl = 'http://localhost:3000/audio'; // URL para generar audio
+  private speechToTextUrl = 'http://localhost:3000/speech-to-text';
+
 
   constructor(private http: HttpClient) { }
   //Chat
@@ -58,4 +60,18 @@ export class OpenaiService {
         throw new Error('Error uploading file');
       });
   }
+  //speechToText
+  async getSpeechFromText(text: string): Promise<Blob> {
+    try {
+      const response = await this.http.post(this.speechToTextUrl, { text }, { responseType: 'blob' }).toPromise();
+      if (!response) {
+        throw new Error('Error: No audio received');
+      }
+      return new Blob([response], { type: 'audio/mpeg' });
+    } catch (error) {
+      console.error('Error generating speech:', error);
+      throw new Error('Error generating speech');
+    }
+  }
+  
 }

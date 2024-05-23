@@ -11,13 +11,15 @@ import { ChatComponent } from './chat/chat.component';
 import { AssistantConfigComponent } from './assistant-config/assistant-config.component';
 import { RouterModule } from '@angular/router';
 import { ChattestComponent } from './chattest/chattest.component';
+import { SpeechToTextComponent } from './speech-to-text/speech-to-text.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     ChatComponent,
     AssistantConfigComponent,
-    ChattestComponent
+    ChattestComponent,
+    SpeechToTextComponent
   ],
   imports: [
     BrowserModule,
@@ -28,6 +30,7 @@ import { ChattestComponent } from './chattest/chattest.component';
     RouterModule.forRoot([
       { path: 'ConfigurarAsistente', component: AssistantConfigComponent },
       { path: 'chat', component: ChatComponent },
+      { path: 'recogn', component: SpeechToTextComponent },
 
       
     ]),

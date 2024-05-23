@@ -9,11 +9,15 @@ import { OpenaiService } from '../services/openai.service';
 export class ChattestComponent implements OnInit {
   messages: { text: string; sender: string; }[] = [];
   userInput: string = '';
-
+  mensajeInicial="Hola, ¿en qué puedo ayudarte?";
+  //Archivo y audio
   selectedFile: File | null = null;
   audioUrl: string | null = null;
+  //Chat
 
-  mensajeInicial="Hola, ¿en qué puedo ayudarte?";
+  //Record
+  isListening: boolean = false;
+
 
   constructor(private openaiService: OpenaiService) { }
 
@@ -93,5 +97,39 @@ export class ChattestComponent implements OnInit {
           this.addBotMessage('Error al cargar el archivo.');
         });
     }
+  }
+
+  //Record voice
+  startRecognition() {
+    const recognition = new (window.SpeechRecognition || (window as any).webkitSpeechRecognition)();
+    recognition.lang = 'es-ES';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      this.isListening = true;
+      console.log('Reconocimiento de voz iniciado. Por favor, habla.');
+      console.log('Speech recognition started');
+    };
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      this.userInput = transcript;
+      this.sendMessage();
+      this.isListening = false;
+    };
+
+    recognition.onspeechend = () => {
+      recognition.stop();
+      this.isListening = false;
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error('Speech recognition error', event.error);
+      console.log('Error en el reconocimiento de voz: ' + event.error);
+      this.isListening = false;
+    };
+
+    recognition.start();
   }
 }

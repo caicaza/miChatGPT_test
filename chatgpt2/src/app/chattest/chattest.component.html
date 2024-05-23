@@ -11,3 +11,7 @@
   <button (click)="sendMessage()">Enviar</button>
 </div>
 <button (click)="sonido()">Escuchar</button>
+
+<button (click)="startRecognition()" [disabled]="isListening">
+  {{ isListening ? 'Escuchando...' : 'Hablar' }}
+</button>
