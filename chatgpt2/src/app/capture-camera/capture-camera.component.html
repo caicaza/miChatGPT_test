@@ -1,0 +1,11 @@
+<webcam
+      [width]="640"
+      [height]="480"
+      [trigger]="trigger"
+      [allowCameraSwitch]="true"
+      [videoOptions]="videoOptions"
+      (imageCapture)="handleImageCapture($event)"
+    ></webcam>
+    <button (click)="triggerSnapshot()" [disabled]="isTriggerDisabled">Capturar Imagen</button>
+    <button *ngIf="imageCaptured" (click)="sendImageToOpenAI()">Enviar a OpenAI</button>
+  

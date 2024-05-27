@@ -12,6 +12,11 @@ import { AssistantConfigComponent } from './assistant-config/assistant-config.co
 import { RouterModule } from '@angular/router';
 import { ChattestComponent } from './chattest/chattest.component';
 import { SpeechToTextComponent } from './speech-to-text/speech-to-text.component';
+import { VoiceRecognitionService } from './services/voice-recognition.service';
+import { CaptureCameraComponent } from './capture-camera/capture-camera.component';
+
+import { WebcamModule } from 'ngx-webcam';
+
 
 @NgModule({
   declarations: [
@@ -19,7 +24,8 @@ import { SpeechToTextComponent } from './speech-to-text/speech-to-text.component
     ChatComponent,
     AssistantConfigComponent,
     ChattestComponent,
-    SpeechToTextComponent
+    SpeechToTextComponent,
+    CaptureCameraComponent
   ],
   imports: [
     BrowserModule,
@@ -27,17 +33,20 @@ import { SpeechToTextComponent } from './speech-to-text/speech-to-text.component
     FormsModule,
     HttpClientModule,
 
+    WebcamModule,
+
     RouterModule.forRoot([
       { path: 'ConfigurarAsistente', component: AssistantConfigComponent },
       { path: 'chat', component: ChatComponent },
       { path: 'recogn', component: SpeechToTextComponent },
+      { path: 'camara', component: CaptureCameraComponent },      
 
       
     ]),
 
   ],
   
-  providers: [],
+  providers: [VoiceRecognitionService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

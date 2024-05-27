@@ -1,4 +1,9 @@
-import { Injectable } from '@angular/core';
+import { Injectable, EventEmitter } from '@angular/core';
+
+declare var webkitSpeechRecognition: any;
+declare var SpeechRecognition: any;
+
+//Revisar en ningun momento le asignamos el mircrofono al servicio
 
 @Injectable({
   providedIn: 'root'
@@ -8,9 +13,11 @@ export class VoiceRecognitionService {
   text = '';
   tempWords = '';
   isStoppedSpeechRecog = false;
+  silenceTimeoutId: any;
+  onSpeechDetected = new EventEmitter<string>();
 
   constructor() {
-    this.recognition = new (window.webkitSpeechRecognition || window.SpeechRecognition)();
+    this.recognition = new (webkitSpeechRecognition || SpeechRecognition)();
     this.recognition.interimResults = true;
     this.recognition.lang = 'es-ES';
 
@@ -21,7 +28,17 @@ export class VoiceRecognitionService {
         .join('');
 
       this.tempWords = transcript;
-      console.log("transcrpt");
+      console.log('Transcript:', this.tempWords);
+
+      // Emit the detected speech
+     // this.onSpeechDetected.emit(this.getVoice());
+
+      // Restart the silence timer if a word is detected
+      clearTimeout(this.silenceTimeoutId);
+      this.silenceTimeoutId = setTimeout(() => {
+        console.log('Detected 2 seconds of silence.');
+        this.onSpeechDetected.emit('Silence');
+      }, 2000);
     });
 
     this.recognition.addEventListener('end', () => {
@@ -51,5 +68,11 @@ export class VoiceRecognitionService {
   wordConcat() {
     this.text = this.text + ' ' + this.tempWords + '.';
     this.tempWords = '';
+  }
+
+  getVoice(): string {
+    const miWords = this.text;
+    this.text = '';
+    return miWords;
   }
 }

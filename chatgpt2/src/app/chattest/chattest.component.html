@@ -12,6 +12,15 @@
 </div>
 <button (click)="sonido()">Escuchar</button>
 
-<button (click)="startRecognition()" [disabled]="isListening">
-  {{ isListening ? 'Escuchando...' : 'Hablar' }}
-</button>
+<div>
+  <h1>Voice recognition</h1>
+  <button (click)="toggleRecording()">
+    {{ isRecording ? 'Stop Recording' : 'Start Recording' }}
+  </button>
+  <select (change)="onDeviceChange($event)">
+    <option *ngFor="let device of availableDevices" [value]="device.deviceId">
+      {{ device.label || 'Unnamed device' }}
+    </option>
+  </select>
+  <canvas #visualizerCanvas id="visualizerCanvas" style="background: rgb(255, 255, 255);"></canvas>
+</div>

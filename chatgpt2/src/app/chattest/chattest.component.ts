@@ -1,12 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { OpenaiService } from '../services/openai.service';
+import { VoiceRecognitionService } from '../services/voice-recognition.service';
 
 @Component({
   selector: 'app-chattest',
   templateUrl: './chattest.component.html',
   styleUrls: ['./chattest.component.css']
 })
-export class ChattestComponent implements OnInit {
+export class ChattestComponent implements OnInit, AfterViewInit {
   messages: { text: string; sender: string; }[] = [];
   userInput: string = '';
   mensajeInicial="Hola, ¿en qué puedo ayudarte?";
@@ -15,14 +16,44 @@ export class ChattestComponent implements OnInit {
   audioUrl: string | null = null;
   //Chat
 
-  //Record
-  isListening: boolean = false;
+  //Reconocimiento de voz
+  //isListening: boolean = false;
 
+  @ViewChild('visualizerCanvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
 
-  constructor(private openaiService: OpenaiService) { }
+  availableDevices: MediaDeviceInfo[] = [];
+  selectedDeviceId: string = '';
+  isRecording: boolean = false;
+  mediaStream: MediaStream | null = null;
+  audioContext: AudioContext | null = null;
+  analyserNode: AnalyserNode | null = null;
+  canvasContext: CanvasRenderingContext2D | null = null;
+  dataArray: Uint8Array | null = null;
+  animationFrameId: number | null = null;
+  silenceTimeoutId: any;
+
+  recognizedText = '';
+
+  constructor(private openaiService: OpenaiService, public service: VoiceRecognitionService) { }
 
   ngOnInit(): void {
     this.addBotMessage(this.mensajeInicial);
+    //voice recognition
+    this.getAudioDevices();
+    this.service.onSpeechDetected.subscribe((message: string) => {
+      console.log('Speech detected:', message);
+      if (message == 'Silence') {
+        this.recognizedText = this.service.getVoice();
+        console.log("voz obtenida")
+        console.log(this.recognizedText);
+        this.userInput=this.recognizedText;
+        this.sendMessage();
+      }
+    });
+  }
+
+  ngAfterViewInit(): void {
+    this.setupCanvas();
   }
 
   async sendMessage() {
@@ -100,36 +131,128 @@ export class ChattestComponent implements OnInit {
   }
 
   //Record voice
-  startRecognition() {
-    const recognition = new (window.SpeechRecognition || (window as any).webkitSpeechRecognition)();
-    recognition.lang = 'es-ES';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
+  async getAudioDevices() {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      this.availableDevices = devices.filter(device => device.kind === 'audioinput');
+      console.log('Available audio input devices: ', this.availableDevices);
 
-    recognition.onstart = () => {
-      this.isListening = true;
-      console.log('Reconocimiento de voz iniciado. Por favor, habla.');
-      console.log('Speech recognition started');
-    };
+      if (this.availableDevices.length > 0) {
+        this.selectedDeviceId = this.availableDevices[0].deviceId;
+      }
+    } catch (error) {
+      console.error('Error fetching audio devices: ', error);
+    }
+  }
 
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      this.userInput = transcript;
-      this.sendMessage();
-      this.isListening = false;
-    };
+  async toggleRecording() {
+    if (this.isRecording) {
+      this.stopService();
+    } else {
+      await this.startService();
+    }
+  }
 
-    recognition.onspeechend = () => {
-      recognition.stop();
-      this.isListening = false;
-    };
+  async startService() {
+    if (this.selectedDeviceId) {
+      try {
+        if (this.mediaStream) {
+          this.mediaStream.getTracks().forEach(track => track.stop());
+        }
+        this.mediaStream = await navigator.mediaDevices.getUserMedia({
+          audio: { deviceId: this.selectedDeviceId }
+        });
 
-    recognition.onerror = (event: any) => {
-      console.error('Speech recognition error', event.error);
-      console.log('Error en el reconocimiento de voz: ' + event.error);
-      this.isListening = false;
-    };
+        this.audioContext = new AudioContext();
+        this.analyserNode = this.audioContext.createAnalyser();
+        this.analyserNode.fftSize = 256;
+        this.analyserNode.smoothingTimeConstant = 0.3;
 
-    recognition.start();
+        const source = this.audioContext.createMediaStreamSource(this.mediaStream);
+        source.connect(this.analyserNode);
+
+        this.dataArray = new Uint8Array(this.analyserNode.frequencyBinCount);
+
+        this.service.start();
+        this.isRecording = true;
+
+        const selectedDevice = this.availableDevices.find(device => device.deviceId === this.selectedDeviceId);
+        console.log('Using microphone: ', selectedDevice ? selectedDevice.label : 'Unknown device');
+
+        this.draw();
+      } catch (error) {
+        console.error('Error accessing selected microphone: ', error);
+      }
+    } else {
+      console.warn('No microphone selected.');
+    }
+  }
+
+  stopService(): void {
+    this.service.stop();
+    this.isRecording = false;
+    if (this.mediaStream) {
+      this.mediaStream.getTracks().forEach(track => track.stop());
+      this.mediaStream = null;
+    }
+    if (this.audioContext) {
+      this.audioContext.close();
+      this.audioContext = null;
+      if (this.animationFrameId) {
+        cancelAnimationFrame(this.animationFrameId);
+      }
+    }
+  }
+
+  async onDeviceChange(event: Event) {
+    const selectElement = event.target as HTMLSelectElement;
+    this.selectedDeviceId = selectElement.value;
+    if (this.isRecording) {
+      this.stopService();
+      await this.startService();
+    }
+  }
+
+  setupCanvas() {
+    const canvas = this.canvasRef.nativeElement;
+    this.canvasContext = canvas.getContext('2d');
+    if (!this.canvasContext) {
+      console.error('Failed to get canvas context.');
+    }
+  }
+
+  draw() {
+    if (!this.canvasContext || !this.analyserNode || !this.dataArray) return;
+
+    this.analyserNode.getByteFrequencyData(this.dataArray);
+    this.canvasContext.clearRect(0, 0, this.canvasContext.canvas.width, this.canvasContext.canvas.height);
+    const barWidth = (this.canvasContext.canvas.width / this.analyserNode.frequencyBinCount) * 2.5;
+    let barHeight;
+    let x = 0;
+    let maxAmplitude = 0;
+
+    for (let i = 0; i < this.analyserNode.frequencyBinCount; i++) {
+      barHeight = this.dataArray[i] / 2;
+      maxAmplitude = Math.max(maxAmplitude, barHeight);
+
+      this.canvasContext.fillStyle = 'rgb(' + (barHeight + 100) + ',50,50)';
+      this.canvasContext.fillRect(x, this.canvasContext.canvas.height - barHeight / 2, barWidth, barHeight);
+
+      x += barWidth + 1;
+    }
+
+    if (maxAmplitude < 10) {
+      if (!this.silenceTimeoutId) {
+        this.silenceTimeoutId = setTimeout(() => {
+          console.log('Detected 2 seconds of silence. Stopping recording.');
+          this.stopService();
+        }, 2000);
+      }
+    } else {
+      clearTimeout(this.silenceTimeoutId);
+      this.silenceTimeoutId = null;
+    }
+
+    this.animationFrameId = requestAnimationFrame(() => this.draw());
   }
 }

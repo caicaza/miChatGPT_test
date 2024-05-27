@@ -10,19 +10,12 @@ export class OpenaiService {
   private uploadUrl = 'http://localhost:3000/upload';
   private speechUrl = 'http://localhost:3000/audio'; // URL para generar audio
   private speechToTextUrl = 'http://localhost:3000/speech-to-text';
+  private visionUrl = 'http://localhost:3000/vision'; // URL para enviar la imagen
 
 
   constructor(private http: HttpClient) { }
   //Chat
-/*   async getChatResponse(prompt: string): Promise<string> {
-    try {
-      const response = await this.http.post<{ text: string }>(this.apiUrl, { prompt }).toPromise();
-      return response?.text || 'Lo siento, ha ocurrido un error.';
-    } catch (error) {
-      console.error('Error fetching response from OpenAI proxy:', error);
-      return 'Lo siento, ha ocurrido un error.';
-    }
-  } */
+
 
   async getChatResponse(prompt: string): Promise<{ text: string; audioUrl?: string }> {
     try {
@@ -73,5 +66,17 @@ export class OpenaiService {
       throw new Error('Error generating speech');
     }
   }
-  
+
+   // Vision
+   async processImage(imageFile: File): Promise<any> {
+    try {
+      const formData = new FormData();
+      formData.append('image', imageFile);
+
+      const response = await this.http.post(this.visionUrl, formData).toPromise();
+      return response;
+    } catch (error) {
+      throw new Error('Error procesando imagen en OpenAI');
+    }
+  }
 }

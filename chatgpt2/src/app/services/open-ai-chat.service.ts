@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { OpenAI } from 'openai';
+/* import { OpenAI } from 'openai';
 import { environment } from '../../environments/environment';
 
 
-
+ */
 
 
 
@@ -36,7 +36,7 @@ export class OpenAiChatService {
   } */
 
   private openaiInstance: any;
-
+/* 
   constructor() {
     this.openaiInstance = new OpenAI({
       apiKey: environment.openaiApiKey,
@@ -58,5 +58,5 @@ export class OpenAiChatService {
       console.error('Error fetching response from OpenAI:', error);
       return 'Lo siento, ha ocurrido un error.';
     }
-  }
+  } */
 }
