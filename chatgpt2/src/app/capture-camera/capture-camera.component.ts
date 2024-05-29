@@ -1,29 +1,72 @@
-import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
+import {  Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { OpenaiService } from '../services/openai.service';
 
-import { WebcamImage, WebcamInitError, WebcamUtil } from 'ngx-webcam';
-import { Subject, Observable } from 'rxjs';
+import { WebcamImage } from 'ngx-webcam';
+import { Subject, Observable, interval } from 'rxjs';
+import { takeWhile } from 'rxjs/operators';
 
 @Component({
   selector: 'app-capture-camera',
   templateUrl: './capture-camera.component.html',
   styleUrl: './capture-camera.component.css'
 })
-export class CaptureCameraComponent {
-  @ViewChild('webcam')
-  webcamElement!: ElementRef<any>;
-  // Propiedades para controlar la cámara
+export class CaptureCameraComponent implements OnInit, OnDestroy {
+  @ViewChild('webcam') webcamElement!: ElementRef<any>;
+
+  public showWebcam = false;
+  public allowCapture = false;
   public trigger: Subject<void> = new Subject<void>();
   public isTriggerDisabled = false;
   public videoOptions: MediaTrackConstraints = {
-    facingMode: 'environment', // Puedes cambiar a 'user' si prefieres la cámara frontal
+    facingMode: 'environment',
   };
 
-  // Propiedades para capturar la imagen
   public imageCaptured = false;
   public capturedImage!: WebcamImage;
 
+  private captureInterval!: any;
+
+  private intervalCapture = 5000;
+
   constructor(private openaiService: OpenaiService) {}
+
+  ngOnInit(): void {
+    // Iniciar captura automática si allowCapture es true
+    this.startAutoCapture();
+  }
+
+  ngOnDestroy(): void {
+    this.stopAutoCapture();
+  }
+
+  public toggleWebcam(): void {
+    this.showWebcam = !this.showWebcam;
+  }
+
+  public toggleCapture(): void {
+    this.allowCapture = !this.allowCapture;
+    if (this.allowCapture) {
+      this.startAutoCapture();
+    } else {
+      this.stopAutoCapture();
+    }
+  }
+
+  private startAutoCapture(): void {
+    this.captureInterval = interval(this.intervalCapture).pipe(
+      takeWhile(() => this.allowCapture)
+    ).subscribe(() => {
+      if (this.allowCapture) {
+        this.triggerSnapshot();
+      }
+    });
+  }
+
+  private stopAutoCapture(): void {
+    if (this.captureInterval) {
+      this.captureInterval.unsubscribe();
+    }
+  }
 
   public triggerSnapshot(): void {
     this.trigger.next();
@@ -32,16 +75,15 @@ export class CaptureCameraComponent {
   public handleImageCapture(webcamImage: WebcamImage): void {
     this.capturedImage = webcamImage;
     this.imageCaptured = true;
+    this.sendImageToOpenAI();  // Enviar la imagen a OpenAI automáticamente después de capturarla
   }
 
   public async sendImageToOpenAI(): Promise<void> {
     try {
       const imageFile = this.webcamImageToFile(this.capturedImage);
-
       const response = await this.openaiService.processImage(imageFile);
       console.log('Respuesta de OpenAI:', response);
-
-      // Puedes manejar la respuesta de OpenAI aquí
+      // Manejar la respuesta de OpenAI aquí
     } catch (error) {
       console.error('Error procesando imagen en OpenAI:', error);
     }
@@ -49,8 +91,7 @@ export class CaptureCameraComponent {
 
   private webcamImageToFile(webcamImage: WebcamImage): File {
     const imageDataBlob = this.dataURItoBlob(webcamImage.imageAsDataUrl);
-    const imageFile = new File([imageDataBlob], 'webcam-image.jpg', { type: 'image/jpeg' });
-    return imageFile;
+    return new File([imageDataBlob], 'webcam-image.jpg', { type: 'image/jpeg' });
   }
 
   private dataURItoBlob(dataURI: string): Blob {

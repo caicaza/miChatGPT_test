@@ -16,6 +16,7 @@ import { VoiceRecognitionService } from './services/voice-recognition.service';
 import { CaptureCameraComponent } from './capture-camera/capture-camera.component';
 
 import { WebcamModule } from 'ngx-webcam';
+import { VisemeSyncComponent } from './viseme-sync/viseme-sync.component';
 
 
 @NgModule({
@@ -25,7 +26,8 @@ import { WebcamModule } from 'ngx-webcam';
     AssistantConfigComponent,
     ChattestComponent,
     SpeechToTextComponent,
-    CaptureCameraComponent
+    CaptureCameraComponent,
+    VisemeSyncComponent
   ],
   imports: [
     BrowserModule,
@@ -39,7 +41,8 @@ import { WebcamModule } from 'ngx-webcam';
       { path: 'ConfigurarAsistente', component: AssistantConfigComponent },
       { path: 'chat', component: ChatComponent },
       { path: 'recogn', component: SpeechToTextComponent },
-      { path: 'camara', component: CaptureCameraComponent },      
+      { path: 'camara', component: CaptureCameraComponent },
+      { path: 'viseme', component: VisemeSyncComponent },         
 
       
     ]),

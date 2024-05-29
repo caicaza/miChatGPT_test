@@ -1,0 +1,10 @@
+<div>
+    <label for="textInput">Ingresa un texto:</label>
+    <input type="text" id="textInput" [(ngModel)]="textInput">
+    <button (click)="synthesizeSpeech()">Generar Audio y Visemes</button>
+  </div>
+  
+  <div>
+    <canvas #canvas width="400" height="300"></canvas>
+  </div>
+  
