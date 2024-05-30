@@ -20,7 +20,7 @@ export class VisemeSyncService {
       const response = await this.http.post<{ audioFilePath: string, visemesFilePath: string }>(this.apiUrl, { text }).toPromise();
 
       if (response && response.audioFilePath) {
-        const audioFilePath = `${response.audioFilePath}?_=${new Date().getTime()}`; // Agregar una cadena aleatoria
+        const audioFilePath = `${this.audioUrl}?_=${new Date().getTime()}`; // Agregar una cadena aleatoria
         this.audio = new Audio(audioFilePath);
       } else {
         throw new Error('No audioFilePath found in response');
