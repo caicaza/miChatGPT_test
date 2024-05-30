@@ -1,4 +1,7 @@
 <!-- chat.component.html -->
+<div class="tec">
+  <canvas #canvas width="400" height="600" style="align-items: center;"></canvas>
+</div>
 
 <div class="chat-container">
   <div *ngFor="let message of messages" class="message" [ngClass]="{'user-message': message.sender === 'user', 'bot-message': message.sender === 'bot'}">
@@ -24,3 +27,5 @@
   </select>
   <canvas #visualizerCanvas id="visualizerCanvas" style="background: rgb(255, 255, 255);"></canvas>
 </div>
+Avatar
+

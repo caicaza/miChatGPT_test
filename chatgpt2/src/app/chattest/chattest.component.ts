@@ -2,6 +2,11 @@ import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angula
 import { OpenaiService } from '../services/openai.service';
 import { VoiceRecognitionService } from '../services/voice-recognition.service';
 
+interface Viseme {
+  audioOffset: number;
+  visemeId: number;
+}
+
 @Component({
   selector: 'app-chattest',
   templateUrl: './chattest.component.html',
@@ -34,9 +39,19 @@ export class ChattestComponent implements OnInit, AfterViewInit {
 
   recognizedText = '';
 
+  //Para la animacion Avatar
+  @ViewChild('canvas', { static: true }) canvas!: ElementRef<HTMLCanvasElement>;
+  private ctx!: CanvasRenderingContext2D;
+  private images: { [key: string]: HTMLImageElement } = {};
+  private visemes: Viseme[] = [];
+  textInput: string = '';
+
   constructor(private openaiService: OpenaiService, public service: VoiceRecognitionService) { }
 
   ngOnInit(): void {
+    //Avatar
+    this.ctx = this.canvas.nativeElement.getContext('2d')!;
+    //bot
     this.addBotMessage(this.mensajeInicial);
     //voice recognition
     this.getAudioDevices();
@@ -66,13 +81,23 @@ export class ChattestComponent implements OnInit, AfterViewInit {
       const botResponse = await this.openaiService.getChatResponse(this.userInput);
       this.addBotMessage(botResponse.text);
       this.audioUrl = await this.openaiService.getSpeechAudio();
-      console.log("audio response");
+      console.log("audio response 0");
+      console.log(botResponse.audioUrl);
 
-      if (botResponse.audioUrl) {
-        
-        console.log("audio response");
-        console.log(this.audioUrl);
-        this.playAudio();
+      console.log("audio response 2");
+      console.log(this.audioUrl);
+      console.log("Visemas");     
+      console.log(botResponse.viseme);
+      this.visemes=botResponse.viseme;
+      this.loadImages().then(() => {
+        this.startAnimation();
+      });
+
+
+
+
+      if (botResponse.audioUrl) { 
+        //this.playAudio();
       } else {
         this.audioUrl = null;
         //this.playAudio();
@@ -254,5 +279,55 @@ export class ChattestComponent implements OnInit, AfterViewInit {
     }
 
     this.animationFrameId = requestAnimationFrame(() => this.draw());
+  }
+
+  //Para la animarcion avatar
+  private loadImages(): Promise<void> {
+    const visemeIds = Array.from({ length: 22 }, (_, i) => i.toString()); // Visemes from 0 to 21
+    const promises = visemeIds.map(id => {
+      return new Promise<void>((resolve) => {
+        const img = new Image();
+        img.src = `assets/${id}.jpg`;
+        img.onload = () => {
+          this.images[id] = img;
+          resolve();
+        };
+      });
+    });
+
+    return Promise.all(promises).then(() => { });
+  }
+
+  private startAnimation() {
+    let visemeIndex = 0;
+
+    //this.visemeSyncService.playAudio();
+
+    const update = () => {
+      const audio = this.openaiService.getAudio();
+      const currentTime = audio ? audio.currentTime * 1000 : 0; // Convert to ms
+      if (visemeIndex < this.visemes.length && currentTime >= this.visemes[visemeIndex].audioOffset) {
+        const visemeId = this.visemes[visemeIndex].visemeId.toString();
+        if (this.images[visemeId]) {
+          this.drawViseme(visemeId);
+        } else {
+          console.warn(`Image for viseme ID ${visemeId} not found.`);
+        }
+        visemeIndex++;
+      }
+      requestAnimationFrame(update);
+    };
+
+    update();
+  }
+
+  private drawViseme(visemeId: string) {
+    const img = this.images[visemeId];
+    if (img) {
+      this.ctx.clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
+      this.ctx.drawImage(img, 0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
+    } else {
+      console.warn(`Image for viseme ID ${visemeId} not found.`);
+    }
   }
 }

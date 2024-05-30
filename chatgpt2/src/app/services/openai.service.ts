@@ -1,4 +1,3 @@
-
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
@@ -12,21 +11,28 @@ export class OpenaiService {
   private speechToTextUrl = 'http://localhost:3000/speech-to-text';
   private visionUrl = 'http://localhost:3000/vision'; // URL para enviar la imagen
 
+  private audio: HTMLAudioElement | null = null;
+  audioBot: HTMLAudioElement | null = null;
+  private visemes: { audioOffset: number, visemeId: number }[] = [];
 
   constructor(private http: HttpClient) { }
-  //Chat
 
-
-  async getChatResponse(prompt: string): Promise<{ text: string; audioUrl?: string }> {
+  // Método para obtener la respuesta del chat
+  async getChatResponse(prompt: string): Promise<{ text: string; audioUrl?: string; viseme: { audioOffset: number, visemeId: number }[] }> {
     try {
-      const response = await this.http.post<{ text: string; audioUrl?: string }>(this.apiUrl, { prompt }).toPromise();
-      return response || { text: 'Lo siento, ha ocurrido un error.' };
+      const response = await this.http.post<{ text: string; audioUrl?: string; viseme: { audioOffset: number, visemeId: number }[] }>(this.apiUrl, { prompt }).toPromise();
+      if (response) {
+        this.audioBot = new Audio(response.audioUrl);
+        this.visemes = response.viseme || [];        
+      }
+      
+      return response || { text: 'Lo siento, ha ocurrido un error.', viseme: [] };
     } catch (error) {
       console.error('Error fetching response from OpenAI proxy:', error);
-      return { text: 'Lo siento, ha ocurrido un error.' };
+      return { text: 'Lo siento, ha ocurrido un error.', viseme: [] };
     }
   }
-
+  // Método para obtener el audio del discurso
   async getSpeechAudio(): Promise<string> {
     try {
       const response = await this.http.get(this.speechUrl, { responseType: 'blob' }).toPromise();
@@ -41,34 +47,40 @@ export class OpenaiService {
     }
   }
 
-  //Upload
+  // Método para subir archivos
   uploadFile(file: File): Promise<void> {
     const formData = new FormData();
     formData.append('file', file);
 
     return this.http.post<any>(this.uploadUrl, formData).toPromise()
-      .then(() => {})
+      .then(() => { })
       .catch(error => {
         console.error('Error uploading file:', error);
         throw new Error('Error uploading file');
       });
   }
-  //speechToText
+
+  // Método para obtener texto a partir del discurso
   async getSpeechFromText(text: string): Promise<Blob> {
     try {
       const response = await this.http.post(this.speechToTextUrl, { text }, { responseType: 'blob' }).toPromise();
       if (!response) {
         throw new Error('Error: No audio received');
       }
-      return new Blob([response], { type: 'audio/mpeg' });
+
+      const audioBlob = new Blob([response], { type: 'audio/mpeg' });
+      const audioUrl = URL.createObjectURL(audioBlob);
+      this.audio = new Audio(audioUrl);
+
+      return audioBlob;
     } catch (error) {
       console.error('Error generating speech:', error);
       throw new Error('Error generating speech');
     }
   }
 
-   // Vision
-   async processImage(imageFile: File): Promise<any> {
+  // Método para procesar imágenes
+  async processImage(imageFile: File): Promise<any> {
     try {
       const formData = new FormData();
       formData.append('image', imageFile);
@@ -78,5 +90,24 @@ export class OpenaiService {
     } catch (error) {
       throw new Error('Error procesando imagen en OpenAI');
     }
+  }
+
+  // Método para obtener el objeto de audio
+  getAudio(): HTMLAudioElement | null {
+    return this.audio;
+  }
+
+  // Método para obtener los visemas
+  getVisemes(): { audioOffset: number, visemeId: number }[] {
+    return this.visemes;
+  }
+
+  // Método para establecer los visemas
+  setVisemes(visemes: { audioOffset: number, visemeId: number }[]): void {
+    this.visemes = visemes;
+  }
+
+  getAudioBot(): HTMLAudioElement | null {
+    return this.audioBot;
   }
 }
