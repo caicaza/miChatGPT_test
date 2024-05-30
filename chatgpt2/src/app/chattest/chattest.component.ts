@@ -118,10 +118,20 @@ export class ChattestComponent implements OnInit, AfterViewInit {
     this.messages.push({ text: message, sender: 'bot' });
     console.log(message);
     if(message!=this.mensajeInicial){
-      this.playAudio();
+     // this.playAudio(); ///aQUI COLOCAR NUETRO AUDIO
+      //this.openaiService.playAudioBot();
     }
     
   }
+
+/*   async playAudio() {
+    const audio = new Audio();
+    this.audioUrl = await this.openaiService.getSpeechAudio();
+    audio.src = this.audioUrl!;
+    console.log(audio.src);
+    audio.load();
+    audio.play();
+  } */
 
   async playAudio() {
     const audio = new Audio();
@@ -129,14 +139,18 @@ export class ChattestComponent implements OnInit, AfterViewInit {
     audio.src = this.audioUrl!;
     console.log(audio.src);
     audio.load();
+    console.log("audio.currentTime");
+    console.log(audio.currentTime);
+    console.log("audio.currentTime");
     audio.play();
+    
   }
 
   async sonido(){
     const audio = new Audio();
     this.audioUrl = await this.openaiService.getSpeechAudio();
     audio.src = this.audioUrl!;
-    console.log(audio.src);
+    //console.log(audio.src);
     audio.load();
     audio.play();
 
@@ -301,11 +315,18 @@ export class ChattestComponent implements OnInit, AfterViewInit {
   private startAnimation() {
     let visemeIndex = 0;
 
-    //this.visemeSyncService.playAudio();
+    this.openaiService.playAudioBot();
+    
+    let currentTimeA = this.visemes.pop()?.audioOffset;
+    console.log("currentTimeA");
+      
+      console.log(this.openaiService.getAudioBot()?.currentTime);
 
     const update = () => {
-      const audio = this.openaiService.getAudio();
+      const audio = this.openaiService.getAudioBot();
       const currentTime = audio ? audio.currentTime * 1000 : 0; // Convert to ms
+     // console.log(currentTime);          
+      
       if (visemeIndex < this.visemes.length && currentTime >= this.visemes[visemeIndex].audioOffset) {
         const visemeId = this.visemes[visemeIndex].visemeId.toString();
         if (this.images[visemeId]) {
@@ -316,6 +337,10 @@ export class ChattestComponent implements OnInit, AfterViewInit {
         visemeIndex++;
       }
       requestAnimationFrame(update);
+      
+     
+     
+      
     };
 
     update();

@@ -22,7 +22,7 @@ export class OpenaiService {
     try {
       const response = await this.http.post<{ text: string; audioUrl?: string; viseme: { audioOffset: number, visemeId: number }[] }>(this.apiUrl, { prompt }).toPromise();
       if (response) {
-        this.audioBot = new Audio(response.audioUrl);
+        //this.audioBot = new Audio(response.audioUrl);
         this.visemes = response.viseme || [];        
       }
       
@@ -38,8 +38,13 @@ export class OpenaiService {
       const response = await this.http.get(this.speechUrl, { responseType: 'blob' }).toPromise();
       if (!(response instanceof Blob)) {
         throw new Error('Invalid audio response');
-      }
+      }    
+      
       const audioBlob = new Blob([response], { type: 'audio/mpeg' });
+      const audioUrl = URL.createObjectURL(audioBlob);
+
+      // Guardar el audio para su posterior uso
+      this.audioBot = new Audio(audioUrl);
       return URL.createObjectURL(audioBlob);
     } catch (error) {
       console.error('Error fetching speech audio:', error);
@@ -70,7 +75,7 @@ export class OpenaiService {
 
       const audioBlob = new Blob([response], { type: 'audio/mpeg' });
       const audioUrl = URL.createObjectURL(audioBlob);
-      this.audio = new Audio(audioUrl);
+      //this.audio = new Audio(audioUrl);
 
       return audioBlob;
     } catch (error) {
@@ -107,7 +112,25 @@ export class OpenaiService {
     this.visemes = visemes;
   }
 
-  getAudioBot(): HTMLAudioElement | null {
+/*   playAudioBot() {
+    if (this.audioBot) {
+      this.audioBot.play();
+    }
+  } */
+
+  getAudioBot() {
     return this.audioBot;
+  }
+
+   playAudioBot() {
+    const audio = new Audio();
+    audio.src = this.speechUrl;
+    this.audioBot = audio;
+    //this.audioUrl = await this.openaiService.getSpeechAudio();
+    console.log("this.audioBot");
+    console.log(this.audioBot);
+    this.audioBot.load();
+    this.audioBot.play();
+    
   }
 }
