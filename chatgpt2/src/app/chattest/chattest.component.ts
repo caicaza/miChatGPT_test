@@ -46,6 +46,10 @@ export class ChattestComponent implements OnInit, AfterViewInit {
   private visemes: Viseme[] = [];
   textInput: string = '';
 
+  private additionalImages: { [key: string]: HTMLImageElement } = {};
+  private currentAdditionalImage: HTMLImageElement | undefined;
+
+
   constructor(private openaiService: OpenaiService, public voiceService: VoiceRecognitionService) { }
 
   async ngOnInit(): Promise<void> {
@@ -53,6 +57,8 @@ export class ChattestComponent implements OnInit, AfterViewInit {
     this.ctx = this.canvas.nativeElement.getContext('2d')!;
     await this.loadImages();
     this.drawViseme('0');
+    this.startAdditionalImageSequence(); // Iniciar la secuencia de la imagen adicional
+
     //bot
     this.addBotMessage(this.mensajeInicial);
     //voice recognition
@@ -355,4 +361,60 @@ export class ChattestComponent implements OnInit, AfterViewInit {
       console.warn(`Image for viseme ID ${visemeId} not found.`);
     }
   }
+
+  //Ojos avatar
+
+  private startAdditionalImageSequence() {
+    // Cargar las imágenes adicionales
+    const img0 = new Image();
+    img0.src = 'assets/0ojo.jpg';
+    const img1 = new Image();
+    img1.src = 'assets/1ojo.jpg';
+    const img2 = new Image();
+    img2.src = 'assets/2ojo.jpg';
+
+    img0.onload = () => {
+        img1.onload = () => {
+            img2.onload = () => {
+                this.additionalImages['0ojo'] = img0;
+                this.additionalImages['1ojo'] = img1;
+                this.additionalImages['2ojo'] = img2;
+
+                // Iniciar la secuencia
+                setInterval(() => {
+                    this.currentAdditionalImage = this.additionalImages['0ojo'];
+                    this.drawAdditionalImage();
+
+                    setTimeout(() => {
+                        this.currentAdditionalImage = this.additionalImages['1ojo'];
+                        this.drawAdditionalImage();
+
+                        setTimeout(() => {
+                            this.currentAdditionalImage = this.additionalImages['2ojo'];
+                            this.drawAdditionalImage();
+
+                            setTimeout(() => {
+                                this.currentAdditionalImage = undefined;
+                                this.drawAdditionalImage();
+                            }, 100);
+                        }, 400);
+                    }, 100);
+                }, 4000); // Repetir cada 5 segundos
+            };
+        };
+    };
+}
+
+
+  private drawAdditionalImage() {
+    // Redibujar el viseme actual
+    
+    
+    if (this.currentAdditionalImage) {
+
+      // Dibujar la imagen adicional superpuesta
+      this.ctx.drawImage(this.currentAdditionalImage, 0, 0, this.canvas.nativeElement.width, 84); // Ajustar las coordenadas y tamaño según sea necesario
+    }
+  }
+
 }
