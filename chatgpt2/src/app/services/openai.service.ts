@@ -35,22 +35,27 @@ export class OpenaiService {
   // Método para obtener el audio del discurso
   async getSpeechAudio(): Promise<string> {
     try {
-      const response = await this.http.get(this.speechUrl, { responseType: 'blob' }).toPromise();
-      if (!(response instanceof Blob)) {
-        throw new Error('Invalid audio response');
-      }    
-      
-      const audioBlob = new Blob([response], { type: 'audio/mpeg' });
-      const audioUrl = URL.createObjectURL(audioBlob);
+        const response = await this.http.get(this.speechUrl, { responseType: 'blob' }).toPromise();
+        if (!(response instanceof Blob)) {
+            throw new Error('Invalid audio response');
+        }
 
-      // Guardar el audio para su posterior uso
-      this.audioBot = new Audio(audioUrl);
-      return URL.createObjectURL(audioBlob);
+        // Liberar el URL anterior si existe
+        if (this.audioBot) {
+            URL.revokeObjectURL(this.audioBot.src);
+        }
+
+        const audioBlob = new Blob([response], { type: 'audio/mpeg' });
+        const audioUrl = URL.createObjectURL(audioBlob);
+
+        // Guardar el audio para su posterior uso
+        this.audioBot = new Audio(audioUrl);
+        return audioUrl;
     } catch (error) {
-      console.error('Error fetching speech audio:', error);
-      throw new Error('Error fetching speech audio');
+        console.error('Error fetching speech audio:', error);
+        throw new Error('Error fetching speech audio');
     }
-  }
+}
 
   // Método para subir archivos
   uploadFile(file: File): Promise<void> {
@@ -124,7 +129,8 @@ export class OpenaiService {
 
    playAudioBot() {
     const audio = new Audio();
-    audio.src = this.speechUrl;
+    audio.src = `${this.speechUrl}?_=${new Date().getTime()}`;
+
     this.audioBot = audio;
     //this.audioUrl = await this.openaiService.getSpeechAudio();
     console.log("this.audioBot");

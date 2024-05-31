@@ -46,19 +46,21 @@ export class ChattestComponent implements OnInit, AfterViewInit {
   private visemes: Viseme[] = [];
   textInput: string = '';
 
-  constructor(private openaiService: OpenaiService, public service: VoiceRecognitionService) { }
+  constructor(private openaiService: OpenaiService, public voiceService: VoiceRecognitionService) { }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     //Avatar
     this.ctx = this.canvas.nativeElement.getContext('2d')!;
+    await this.loadImages();
+    this.drawViseme('0');
     //bot
     this.addBotMessage(this.mensajeInicial);
     //voice recognition
     this.getAudioDevices();
-    this.service.onSpeechDetected.subscribe((message: string) => {
+    this.voiceService.onSpeechDetected.subscribe((message: string) => {
       console.log('Speech detected:', message);
       if (message == 'Silence') {
-        this.recognizedText = this.service.getVoice();
+        this.recognizedText = this.voiceService.getVoice();
         console.log("voz obtenida")
         console.log(this.recognizedText);
         this.userInput=this.recognizedText;
@@ -81,20 +83,17 @@ export class ChattestComponent implements OnInit, AfterViewInit {
       const botResponse = await this.openaiService.getChatResponse(this.userInput);
       this.addBotMessage(botResponse.text);
       this.audioUrl = await this.openaiService.getSpeechAudio();
-      console.log("audio response 0");
+      /* console.log("audio response 0");
       console.log(botResponse.audioUrl);
 
       console.log("audio response 2");
       console.log(this.audioUrl);
       console.log("Visemas");     
-      console.log(botResponse.viseme);
+      console.log(botResponse.viseme); */
       this.visemes=botResponse.viseme;
       this.loadImages().then(() => {
         this.startAnimation();
       });
-
-
-
 
       if (botResponse.audioUrl) { 
         //this.playAudio();
@@ -212,7 +211,7 @@ export class ChattestComponent implements OnInit, AfterViewInit {
 
         this.dataArray = new Uint8Array(this.analyserNode.frequencyBinCount);
 
-        this.service.start();
+        this.voiceService.start();
         this.isRecording = true;
 
         const selectedDevice = this.availableDevices.find(device => device.deviceId === this.selectedDeviceId);
@@ -228,7 +227,7 @@ export class ChattestComponent implements OnInit, AfterViewInit {
   }
 
   stopService(): void {
-    this.service.stop();
+    this.voiceService.stop();
     this.isRecording = false;
     if (this.mediaStream) {
       this.mediaStream.getTracks().forEach(track => track.stop());
@@ -348,6 +347,7 @@ export class ChattestComponent implements OnInit, AfterViewInit {
 
   private drawViseme(visemeId: string) {
     const img = this.images[visemeId];
+    console.log(this.images[visemeId]);
     if (img) {
       this.ctx.clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
       this.ctx.drawImage(img, 0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
