@@ -1,0 +1,20 @@
+<div class="container d-flex align-items-center justify-content-center vh-100">
+    <div class="card custom-card">
+      <div class="card-body">
+        <h5 class="card-title" style="text-align: center;">¡Bienvenido al Simulador de Técnicas de Marketing! Sigue estos pasos para comenzar:
+
+        </h5>
+        <p class="card-text">Paso 1 - Permisos de Dispositivos: Al iniciar el simulador, acepta los permisos para el uso de tu micrófono y cámara.</p>
+        <div class="container mb-2">
+            <button *ngIf="!permissionsGranted" class="btn btn-primary" (click)="requestPermissions()">Solicitar Permisos de Cámara y Micrófono</button>
+            <div *ngIf="permissionsGranted" class="alert alert-success mt-2" style="text-align: center;">Permisos de cámara y micrófono ya fueron aceptados.</div>
+          </div>
+          
+        <p class="card-text">Paso 2 - Haz clic en "Empezar" para iniciar la simulación.</p>
+        <p class="card-text">Paso 3 - Interacción con la IA:
+            Habla con la IA usando tu micrófono y convence a la IA de que compre el producto.</p>
+        <a href="#" class="btn btn-primary">Empezar</a>
+      </div>
+    </div>
+  </div>
+  

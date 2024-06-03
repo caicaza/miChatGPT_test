@@ -17,6 +17,10 @@ export class VoiceRecognitionService {
   onSpeechDetected = new EventEmitter<string>();
 
   constructor() {
+    this.initRecognition();
+  }
+
+  private initRecognition() {
     this.recognition = new (webkitSpeechRecognition || SpeechRecognition)();
     this.recognition.interimResults = true;
     this.recognition.lang = 'es-ES';
@@ -31,7 +35,7 @@ export class VoiceRecognitionService {
       console.log('Transcript:', this.tempWords);
 
       // Emit the detected speech
-     // this.onSpeechDetected.emit(this.getVoice());
+      // this.onSpeechDetected.emit(this.getVoice());
 
       // Restart the silence timer if a word is detected
       clearTimeout(this.silenceTimeoutId);

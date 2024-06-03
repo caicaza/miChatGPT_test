@@ -1,0 +1,19 @@
+.custom-card {
+    max-height: 80vh;
+    width: 100%;
+    max-width: 500px;
+    margin: 20px;
+    background-color: #f8f9fa; /* Puedes cambiar este color según tu preferencia */
+    overflow-y: auto; /* Agrega un scroll si el contenido excede la altura */
+  }
+  
+  .custom-card .card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .vh-100 {
+    height: 100vh;
+  }
+  

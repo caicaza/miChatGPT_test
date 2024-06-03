@@ -1,0 +1,42 @@
+/* evaluation.component.css */
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+  }
+  
+  .json-container {
+    width: 50%;
+    margin-top: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .json-item {
+    border-bottom: 1px solid #ccc;
+    display: flex;
+  }
+  
+  .json-key {
+    flex: 1;
+    background-color: #f0f0f0;
+    padding: 10px;
+    font-weight: bold;
+    min-width: 100px;
+    text-align: center;
+    border-right: 1px solid #ccc;
+  }
+  
+  .json-value {
+    flex: 3;
+    padding: 10px;
+  }
+  
+  .json-value pre {
+    white-space: pre-wrap;
+  }
+  

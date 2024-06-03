@@ -17,6 +17,8 @@ import { CaptureCameraComponent } from './capture-camera/capture-camera.componen
 
 import { WebcamModule } from 'ngx-webcam';
 import { VisemeSyncComponent } from './viseme-sync/viseme-sync.component';
+import { InstruccionesComponent } from './instrucciones/instrucciones.component';
+import { RespuestaComponent } from './respuesta/respuesta.component';
 
 
 @NgModule({
@@ -27,7 +29,9 @@ import { VisemeSyncComponent } from './viseme-sync/viseme-sync.component';
     ChattestComponent,
     SpeechToTextComponent,
     CaptureCameraComponent,
-    VisemeSyncComponent
+    VisemeSyncComponent,
+    InstruccionesComponent,
+    RespuestaComponent
   ],
   imports: [
     BrowserModule,
@@ -42,7 +46,8 @@ import { VisemeSyncComponent } from './viseme-sync/viseme-sync.component';
       { path: 'chat', component: ChatComponent },
       { path: 'recogn', component: SpeechToTextComponent },
       { path: 'camara', component: CaptureCameraComponent },
-      { path: 'viseme', component: VisemeSyncComponent },         
+      { path: 'viseme', component: VisemeSyncComponent }, 
+      { path: 'respuesta', component: RespuestaComponent },         
 
       
     ]),

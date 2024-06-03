@@ -10,6 +10,8 @@ export class OpenaiService {
   private speechUrl = 'http://localhost:3000/audio'; // URL para generar audio
   private speechToTextUrl = 'http://localhost:3000/speech-to-text';
   private visionUrl = 'http://localhost:3000/vision'; // URL para enviar la imagen
+  private evaluationUrl = 'http://localhost:3000/evaluate'; // URL para evaluar al usuario
+
 
   private audio: HTMLAudioElement | null = null;
   audioBot: HTMLAudioElement | null = null;
@@ -138,5 +140,18 @@ export class OpenaiService {
     this.audioBot.load();
     this.audioBot.play();
     
+  }
+
+  //Respuesta
+  // Método para evaluar al vendedor y devolver resultados en formato JSON
+  async evaluate(): Promise<any> {
+    try {
+      const response = await this.http.post<any>(`${this.evaluationUrl}`, prompt).toPromise();
+      console.log('Respuesta de evaluación:', response);
+      return response;
+    } catch (error) {
+      console.error('Error al evaluar al vendedor:', error);
+      throw error;
+    }
   }
 }

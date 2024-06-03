@@ -10,21 +10,29 @@
     <button *ngIf="imageCaptured" (click)="sendImageToOpenAI()">Enviar a OpenAI</button>
    -->
 
-   <div>
-    <button (click)="toggleWebcam()">{{ showWebcam ? 'Ocultar' : 'Mostrar' }} Cámara</button>
-    <button (click)="toggleCapture()" [disabled]="!showWebcam">{{ allowCapture ? 'Detener' : 'Iniciar' }} Captura Automática</button>
+   <div >
+    <div class="row m-2 p-2">
+      <div class="col-3">
+        <button type="button" class="btn btn-primary" (click)="toggleWebcam()">{{ showWebcam ? 'Ocultar' : 'Mostrar' }} Cámara</button>
+      </div>
+
+      <div class="col-4">
+        <button type="button" class="btn btn-primary"(click)="toggleCapture()" [disabled]="!showWebcam">{{ allowCapture ? 'Detener' : 'Iniciar' }} Captura Automática</button>
+
+      </div>
+    </div>
   </div>
   
   <webcam
     *ngIf="showWebcam"
-    [width]="640"
-    [height]="480"
+    [width]="200"
+    [height]="200"
     [trigger]="trigger"
     [allowCameraSwitch]="true"
     [videoOptions]="videoOptions"
     (imageCapture)="handleImageCapture($event)"
   ></webcam>
   
-  <button (click)="triggerSnapshot()" [disabled]="isTriggerDisabled || !showWebcam">Capturar Imagen</button>
-  <button *ngIf="imageCaptured" (click)="sendImageToOpenAI()">Enviar a OpenAI</button>
+ <!--  <button (click)="triggerSnapshot()" [disabled]="isTriggerDisabled || !showWebcam">Capturar Imagen</button> -->
+<!--   <button *ngIf="imageCaptured" (click)="sendImageToOpenAI()">Enviar a OpenAI</button> -->
   

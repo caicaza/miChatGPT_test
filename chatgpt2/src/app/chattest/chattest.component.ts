@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild, HostListener } from '@angular/core';
 import { OpenaiService } from '../services/openai.service';
 import { VoiceRecognitionService } from '../services/voice-recognition.service';
 
@@ -49,7 +49,14 @@ export class ChattestComponent implements OnInit, AfterViewInit {
   private additionalImages: { [key: string]: HTMLImageElement } = {};
   private currentAdditionalImage: HTMLImageElement | undefined;
 
+ // Escuchar el evento de redimensionar la ventana
+ @HostListener('window:resize', ['$event'])
+ onResize(event: Event) {
+   this.resizeCanvas();
+ }
 
+ // para el boton de audio
+ 
   constructor(private openaiService: OpenaiService, public voiceService: VoiceRecognitionService) { }
 
   async ngOnInit(): Promise<void> {
@@ -76,6 +83,7 @@ export class ChattestComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    this.resizeCanvas();
     this.setupCanvas();
   }
 
@@ -206,23 +214,26 @@ export class ChattestComponent implements OnInit, AfterViewInit {
         this.mediaStream = await navigator.mediaDevices.getUserMedia({
           audio: { deviceId: this.selectedDeviceId }
         });
-
+  
         this.audioContext = new AudioContext();
         this.analyserNode = this.audioContext.createAnalyser();
         this.analyserNode.fftSize = 256;
         this.analyserNode.smoothingTimeConstant = 0.3;
-
+  
         const source = this.audioContext.createMediaStreamSource(this.mediaStream);
         source.connect(this.analyserNode);
-
+  
         this.dataArray = new Uint8Array(this.analyserNode.frequencyBinCount);
-
+  
+        // Necesitamos reiniciar el servicio de reconocimiento de voz después de cambiar el flujo de medios
+        this.voiceService.stop();
         this.voiceService.start();
+  
         this.isRecording = true;
-
+  
         const selectedDevice = this.availableDevices.find(device => device.deviceId === this.selectedDeviceId);
         console.log('Using microphone: ', selectedDevice ? selectedDevice.label : 'Unknown device');
-
+  
         this.draw();
       } catch (error) {
         console.error('Error accessing selected microphone: ', error);
@@ -411,10 +422,33 @@ export class ChattestComponent implements OnInit, AfterViewInit {
     
     
     if (this.currentAdditionalImage) {
+      const miWidth = this.canvas.nativeElement.width;
+      const miHeight = miWidth*0.372;
 
       // Dibujar la imagen adicional superpuesta
-      this.ctx.drawImage(this.currentAdditionalImage, 0, 0, this.canvas.nativeElement.width, 84); // Ajustar las coordenadas y tamaño según sea necesario
+      this.ctx.drawImage(this.currentAdditionalImage, 0, 0, miWidth, miHeight); // Ajustar las coordenadas y tamaño según sea necesario
+    } 
+  }
+
+  //Controlar tamaño canvas avatar
+
+  // Ajustar el tamaño del canvas después de la inicialización de la vista
+ 
+
+  // Método para ajustar el tamaño del canvas
+  private resizeCanvas() {
+    const canvas = document.getElementById('responsiveCanvas') as HTMLCanvasElement;
+    const container = canvas.parentElement as HTMLElement;
+    if (container) {
+      const width = container.clientWidth;
+      const height = width * 4 / 3; // Mantener la proporción 4:3
+      canvas.width = width;
+      canvas.height = height;
+      this.drawViseme('0');
     }
   }
+
+  //Para el boton audio
+  
 
 }
