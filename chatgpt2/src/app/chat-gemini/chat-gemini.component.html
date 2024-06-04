@@ -1,0 +1,9 @@
+<div>
+    <h1>Gemini Chat</h1>
+    <ul>
+      <li *ngFor="let message of messages">{{ message }}</li>
+    </ul>
+    <input [(ngModel)]="inputMessage" placeholder="Type your message" />
+    <button (click)="sendMessage()">Send</button>
+  </div>
+  
