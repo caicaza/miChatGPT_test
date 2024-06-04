@@ -144,14 +144,20 @@ export class OpenaiService {
 
   //Respuesta
   // Método para evaluar al vendedor y devolver resultados en formato JSON
-  async evaluate(): Promise<any> {
-    try {
-      const response = await this.http.post<any>(`${this.evaluationUrl}`, prompt).toPromise();
-      console.log('Respuesta de evaluación:', response);
-      return response;
-    } catch (error) {
-      console.error('Error al evaluar al vendedor:', error);
-      throw error;
+  async getEvaluation(): Promise<string> {
+    console.log("Evaluar");
+    const promptIntern: string = 'Evalua y genera JSON sobre la conversación anterior...';
+  
+    const response = await this.http.post<any>(this.evaluationUrl, { promptIntern }).toPromise();
+  
+    if (!response || !response.text) {
+      throw new Error('Invalid evaluation response'); // Handle unexpected response format
     }
+  
+    return response.text; // Just return the extracted text as a string
   }
+
+
+
+ 
 }

@@ -73,10 +73,10 @@
  <!--  <input type="text" placeholder="Escribe un mensaje..." [(ngModel)]="userInput" (keyup.enter)="sendMessage()">
   <button (click)="sendMessage()">Enviar</button> -->
 </div>
-<button (click)="sonido()">Escuchar</button>
-
+<!-- <button (click)="sonido()">Escuchar</button>
+ -->
 <div>
-  <h1>Voice recognition</h1>
+  <!-- <h1>Voice recognition</h1>
   <button (click)="toggleRecording()">
     {{ isRecording ? 'Stop Recording' : 'Start Recording' }}
   </button>
@@ -84,7 +84,7 @@
     <option *ngFor="let device of availableDevices" [value]="device.deviceId">
       {{ device.label || 'Unnamed device' }}
     </option>
-  </select>
+  </select> -->
   <canvas #visualizerCanvas id="visualizerCanvas" style="background: rgb(255, 255, 255);"></canvas>
 </div>
 Avatar

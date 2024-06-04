@@ -1,27 +1,10 @@
-<button (click)="evaluateVendedor()">Evaluar Vendedor</button>
+ <button (click)="evaluateVendedor()">Evaluar Vendedor</button>
 
-<!-- feedback.component.html -->
-<div *ngIf="feedbackData">
-    <div *ngFor="let key of objectKeys()">
-      <h3>{{ key | titlecase }}</h3>
-      <ng-container [ngSwitch]="getItemType(feedbackData[key])">
-        <div *ngSwitchCase="'FeedbackItem'">
-          <p>Puntuación: {{ (feedbackData[key] as FeedbackItem).puntuacion }}</p>
-          <p>Explicación: {{ (feedbackData[key] as FeedbackItem).explicacion }}</p>
-        </div>
-        <div *ngSwitchCase="'ConsejosGeneralesItem'">
-          <p>Consejos Generales: {{ feedbackData[key].consejos_generales }}</p>
-        </div>
-        <div *ngSwitchCase="'string'">
-          <p>{{ feedbackData[key] }}</p>
-        </div>
-        <div *ngSwitchDefault>
-          <p>Unknown Item Type</p>
-        </div>
-      </ng-container>
-    </div>
-  
-    <button (click)="guardarDatos()">Guardar Datos</button>
+<div *ngIf="evaluacion">
+  <div *ngFor="let key of objectKeys(evaluacion)">
+    <h5>{{ key | titlecase }}</h5>
+    <p [innerHTML]="getEvaluacionText(key)"></p>
   </div>
-  
+</div>
+
   

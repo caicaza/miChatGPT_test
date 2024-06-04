@@ -75,7 +75,7 @@ export class ChattestComponent implements OnInit, AfterViewInit {
       if (message == 'Silence') {
         this.recognizedText = this.voiceService.getVoice();
         console.log("voz obtenida")
-        console.log(this.recognizedText);
+       //console.log(this.recognizedText);
         this.userInput=this.recognizedText;
         this.sendMessage();
       }
@@ -150,12 +150,12 @@ export class ChattestComponent implements OnInit, AfterViewInit {
     const audio = new Audio();
     this.audioUrl = await this.openaiService.getSpeechAudio();
     audio.src = this.audioUrl!;
-    console.log(audio.src);
+    //console.log(audio.src);
     audio.load();
-    console.log("audio.currentTime");
-    console.log(audio.currentTime);
-    console.log("audio.currentTime");
-    audio.play();
+   // console.log("audio.currentTime");
+    //console.log(audio.currentTime);
+    //console.log("audio.currentTime");
+    //audio.play();
     
   }
 
@@ -334,9 +334,9 @@ export class ChattestComponent implements OnInit, AfterViewInit {
     this.openaiService.playAudioBot();
     
     let currentTimeA = this.visemes.pop()?.audioOffset;
-    console.log("currentTimeA");
+    //console.log("currentTimeA");
       
-      console.log(this.openaiService.getAudioBot()?.currentTime);
+    //console.log(this.openaiService.getAudioBot()?.currentTime);
 
     const update = () => {
       const audio = this.openaiService.getAudioBot();
@@ -364,7 +364,7 @@ export class ChattestComponent implements OnInit, AfterViewInit {
 
   private drawViseme(visemeId: string) {
     const img = this.images[visemeId];
-    console.log(this.images[visemeId]);
+    //console.log(this.images[visemeId]);
     if (img) {
       this.ctx.clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
       this.ctx.drawImage(img, 0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);

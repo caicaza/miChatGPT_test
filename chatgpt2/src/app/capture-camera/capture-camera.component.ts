@@ -26,7 +26,7 @@ export class CaptureCameraComponent implements OnInit, OnDestroy {
 
   private captureInterval!: any;
 
-  private intervalCapture = 5000;
+  private intervalCapture = 10000;
 
   constructor(private openaiService: OpenaiService) {}
 
