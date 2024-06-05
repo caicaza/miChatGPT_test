@@ -7,11 +7,21 @@ import { Observable } from 'rxjs';
 })
 export class GeminiService {
 
-  private apiUrl = 'http://localhost:3000/chatGemini';
+  private chatUrl = 'http://localhost:3000/chatGemini';
+  private transcribeUrl = 'http://localhost:3000/transcribeGemini';
+  private textToSpeechUrl = 'http://localhost:3000/textToSpeechGemini';
 
   constructor(private http: HttpClient) { }
 
   sendMessage(message: string): Observable<any> {
-    return this.http.post<any>(this.apiUrl, { message });
+    return this.http.post<any>(this.chatUrl, { message });
+  }
+
+  transcribeAudio(audioContent: string): Observable<any> {
+    return this.http.post<any>(this.transcribeUrl, { audioContent });
+  }
+
+  convertTextToSpeech(text: string): Observable<any> {
+    return this.http.post<any>(this.textToSpeechUrl, { text });
   }
 }
