@@ -8,6 +8,8 @@ import { GeminiService } from '../services/gemini.service';
 })
 export class ChatGeminiComponent {
   message: string = '';
+  messages: { sender: string, text: string }[] = [];
+
   reply: string = '';
   isRecording: boolean = false;
   mediaRecorder: MediaRecorder | null = null;
@@ -19,22 +21,53 @@ export class ChatGeminiComponent {
   constructor(private geminiService: GeminiService) {}
 
   sendMessage() {
+    this.addUserMessage(this.message);
     this.geminiService.sendMessage(this.message).subscribe(response => {
+      this.message = '';
       this.reply = response.reply;
       this.convertTextToSpeech(this.reply);
     });
   }
 
+  addUserMessage(message: string) {
+    this.messages.push({ text: message, sender: 'user' });
+    
+
+  }
+
+  addBotMessage(message: string) {
+    this.messages.push({ text: message, sender: 'bot' });
+    console.log(message);
+        
+  }
+
   convertTextToSpeech(text: string) {
     this.geminiService.convertTextToSpeech(text).subscribe(response => {
+      this.addBotMessage(text);
       this.audioContent = response.audioContent;
       const audio = new Audio(`data:audio/mp3;base64,${this.audioContent}`);
       audio.play();
     });
   }
 
+  toggleRecording(){
+    this.isRecording = this.cambiarBooleano(this.isRecording);
+
+    if (this.isRecording) {
+      this.startRecording();
+    } else {
+      this.stopRecording();
+      
+    }
+
+
+  }
+
   startRecording() {
-    this.isRecording = true;
+         
+      //this.isRecording = true;
+      console.log("isRecording");
+      console.log( this.isRecording);
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then(stream => {
         this.mediaRecorder = new MediaRecorder(stream);
@@ -51,10 +84,17 @@ export class ChatGeminiComponent {
         };
       })
       .catch(error => console.error('Error accessing media devices.', error));
+ 
+         
   }
+  cambiarBooleano(bool: boolean): boolean {
+    return !bool;
+}
 
   stopRecording() {
-    this.isRecording = false;
+    //this.isRecording = false;
+      console.log("isRecording");
+      console.log( this.isRecording);
     this.mediaRecorder?.stop();
   }
 
@@ -67,7 +107,11 @@ export class ChatGeminiComponent {
         const audioContent = base64data.split(',')[1];
         this.geminiService.transcribeAudio(audioContent).subscribe(response => {
           this.message = response.transcription;
-          this.sendMessage();
+          if(this.message != ""){
+            console.log("mensaje("+this.message+")");
+            this.sendMessage();
+          }
+         
         }, error => {
           console.error('Error transcribing audio:', error);
         });
