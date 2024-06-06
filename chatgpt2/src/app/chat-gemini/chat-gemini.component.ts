@@ -44,9 +44,13 @@ export class ChatGeminiComponent {
   convertTextToSpeech(text: string) {
     this.geminiService.convertTextToSpeech(text).subscribe(response => {
       this.addBotMessage(text);
-      this.audioContent = response.audioContent;
+      this.audioContent = response.audio;
       const audio = new Audio(`data:audio/mp3;base64,${this.audioContent}`);
       audio.play();
+
+      // Procesar el viseme (letterTimestamps)
+    
+      console.log(response.viseme);
     });
   }
 

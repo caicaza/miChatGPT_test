@@ -97,13 +97,7 @@ export class ChattestComponent implements OnInit, AfterViewInit {
       const botResponse = await this.openaiService.getChatResponse(this.userInput);
       this.addBotMessage(botResponse.text);
       this.audioUrl = await this.openaiService.getSpeechAudio();
-      /* console.log("audio response 0");
-      console.log(botResponse.audioUrl);
-
-      console.log("audio response 2");
-      console.log(this.audioUrl);
-      console.log("Visemas");     
-      console.log(botResponse.viseme); */
+      
       this.visemes=botResponse.viseme;
       this.loadImages().then(() => {
         this.startAnimation();
@@ -130,11 +124,7 @@ export class ChattestComponent implements OnInit, AfterViewInit {
   addBotMessage(message: string) {
     this.messages.push({ text: message, sender: 'bot' });
     console.log(message);
-    if(message!=this.mensajeInicial){
-     // this.playAudio(); ///aQUI COLOCAR NUETRO AUDIO
-      //this.openaiService.playAudioBot();
-    }
-    
+        
   }
 
 /*   async playAudio() {
