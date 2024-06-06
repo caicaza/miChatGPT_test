@@ -122,4 +122,14 @@ export class ChatGeminiComponent {
       };
     }
   }
+
+  //Evaluar
+  Evaluar(){
+    this.geminiService.getResults().subscribe(response => {
+      this.message = '';
+      this.reply = response.reply;
+      //this.convertTextToSpeech(this.reply);
+    });
+
+  }
 }

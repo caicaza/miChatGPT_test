@@ -20,6 +20,7 @@ import { VisemeSyncComponent } from './viseme-sync/viseme-sync.component';
 import { InstruccionesComponent } from './instrucciones/instrucciones.component';
 import { RespuestaComponent } from './respuesta/respuesta.component';
 import { ChatGeminiComponent } from './chat-gemini/chat-gemini.component';
+import { CaptureCameraGeminiComponent } from './capture-camera-gemini/capture-camera-gemini.component';
 
 
 @NgModule({
@@ -33,7 +34,8 @@ import { ChatGeminiComponent } from './chat-gemini/chat-gemini.component';
     VisemeSyncComponent,
     InstruccionesComponent,
     RespuestaComponent,
-    ChatGeminiComponent
+    ChatGeminiComponent,
+    CaptureCameraGeminiComponent
   ],
   imports: [
     BrowserModule,
@@ -49,8 +51,8 @@ import { ChatGeminiComponent } from './chat-gemini/chat-gemini.component';
       { path: 'recogn', component: SpeechToTextComponent },
       { path: 'camara', component: CaptureCameraComponent },
       { path: 'viseme', component: VisemeSyncComponent }, 
-      { path: 'respuesta', component: RespuestaComponent },
-      { path: 'chatGemini', component: ChatGeminiComponent },      
+      { path: 'respuesta', component: RespuestaComponent },     
+      { path: 'camaraGemini', component: CaptureCameraGeminiComponent },      
     ]),
 
   ],

@@ -96,6 +96,8 @@ export class OpenaiService {
     try {
       const formData = new FormData();
       formData.append('image', imageFile);
+      console.log("formData:"+formData);
+
 
       const response = await this.http.post(this.visionUrl, formData).toPromise();
       return response;
