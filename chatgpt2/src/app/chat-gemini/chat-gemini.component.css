@@ -96,5 +96,19 @@
   width: 100%;
   height: 80vh;
 }
+
+
+/* Cards */
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+/* Si es necesario, puedes añadir un min-height para asegurarte de que las tarjetas tengan una altura mínima */
+.card {
+  min-height: 250px; /* Ajusta este valor según tus necesidades */
+}
   
   

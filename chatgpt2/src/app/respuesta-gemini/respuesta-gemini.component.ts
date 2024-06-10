@@ -26,21 +26,14 @@ export class RespuestaGeminiComponent implements OnInit {
   private evaluacionJson: string = `
     {
       "uso_tecnicas_marketing": {
-        "puntuacion": 0,
-        "explicacion": ""
+        "puntuacion": 1,
+        "explicacion": "adad"
       },
       "profesionalismo": {
         "puntuacion": 0,
-        "explicacion": ""
+        "explicacion": "dfdf"
       },
-      "caracter": {
-        "puntuacion": 0,
-        "explicacion": ""
-      },
-      "atencion_cliente": {
-        "puntuacion": 0,
-        "explicacion": ""
-      },
+      
       "conocimiento_producto": {
         "puntuacion": 0,
         "explicacion": ""
@@ -49,7 +42,7 @@ export class RespuestaGeminiComponent implements OnInit {
         "puntuacion": 0,
         "explicacion": ""
       },
-      "consejos_generales": ""
+      "consejos_generales": "ffff"
     }
   `;
 
@@ -72,10 +65,53 @@ export class RespuestaGeminiComponent implements OnInit {
       return value;
     } else {
       const aspectoEvaluacion = value as AspectoEvaluacion;
-      return `<strong>Puntuación:</strong> ${aspectoEvaluacion.puntuacion}<br><strong>Explicación:</strong> ${aspectoEvaluacion.explicacion}`;
+      return `<strong>Puntuación:</strong> ${aspectoEvaluacion.puntuacion} <br><strong>Explicación:</strong> ${aspectoEvaluacion.explicacion}`;
     }
   }
 
+  getEvaluacionText2(key: string): string {
+    const value = this.evaluacion[key];
+    if (typeof value === 'string') {
+      return value;
+    } else {
+      const aspectoEvaluacion = value as AspectoEvaluacion;
+      return `${aspectoEvaluacion.puntuacion} <span>/10</span> `;
+    }
+  }
+
+  getEvaluacionText3(key: string): string {
+    const value = this.evaluacion[key];
+    if (typeof value === 'string') {
+      return value;
+    } else {
+      const aspectoEvaluacion = value as AspectoEvaluacion;
+      return `${aspectoEvaluacion.explicacion}`;
+    }
+  }
+
+  openModal(explicacion: string) {
+    const modal = document.getElementById('myModal')!;
+    modal.style.display = 'block';
+
+    const modalContent = document.getElementById('modalContent')!;
+    modalContent.innerHTML = explicacion;
+
+    const span = document.getElementsByClassName('close')[0];
+    span.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+  }
+
+  closeModal() {
+    const modal = document.getElementById('myModal')!;
+    modal.style.display = 'none';
+  }
 /*   async evaluateVendedor() {
     try {
       this.geminiService.getResults().subscribe(response => {
@@ -122,6 +158,18 @@ export class RespuestaGeminiComponent implements OnInit {
 
     });
 
+  }
+
+  transformarTexto(texto: string): string {
+    return texto
+      .toLowerCase()
+      .split('_')
+      .map(palabra => palabra.charAt(0).toUpperCase() + palabra.slice(1))
+      .join(' ');
+  }
+
+  transformarTitle(texto: string): string {
+    return this.transformarTexto(texto);
   }
 
     
