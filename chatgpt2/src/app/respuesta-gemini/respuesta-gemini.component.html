@@ -1,0 +1,10 @@
+<button (click)="evaluateVendedor()">Evaluar Vendedor</button>
+
+<div *ngIf="evaluacion">
+  <div *ngFor="let key of objectKeys(evaluacion)">
+    <h5>{{ key | titlecase }}</h5>
+    <p [innerHTML]="getEvaluacionText(key)"></p>
+  </div>
+</div>
+
+  

@@ -21,6 +21,7 @@ import { InstruccionesComponent } from './instrucciones/instrucciones.component'
 import { RespuestaComponent } from './respuesta/respuesta.component';
 import { ChatGeminiComponent } from './chat-gemini/chat-gemini.component';
 import { CaptureCameraGeminiComponent } from './capture-camera-gemini/capture-camera-gemini.component';
+import { RespuestaGeminiComponent } from './respuesta-gemini/respuesta-gemini.component';
 
 
 @NgModule({
@@ -35,7 +36,8 @@ import { CaptureCameraGeminiComponent } from './capture-camera-gemini/capture-ca
     InstruccionesComponent,
     RespuestaComponent,
     ChatGeminiComponent,
-    CaptureCameraGeminiComponent
+    CaptureCameraGeminiComponent,
+    RespuestaGeminiComponent
   ],
   imports: [
     BrowserModule,

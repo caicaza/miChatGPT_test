@@ -1,25 +1,6 @@
 <div>
   <h1>Chat Gemini</h1>
-<!--    <div>
-    <div>
-      <button (click)="startRecording()" [disabled]="isRecording">Start Recording</button>
-      <button (click)="stopRecording()" [disabled]="!isRecording">Stop Recording</button>
-    </div>
-    <div>
-      <textarea [(ngModel)]="message" rows="3" cols="50"></textarea>
-      <button (click)="sendMessage()">Send</button>
-    </div>
-    <div>
-      <h3>Response</h3>
-      <p>{{ reply }}</p>
-    </div>
-    <div *ngIf="audioUrl">
-      <h3>Audio Response</h3>
-      <audio [src]="audioUrl" controls></audio>
-    </div>
-  
-    
-  </div>  -->
+
  
   <section >
     <div class="container  my-2">
@@ -66,4 +47,5 @@
   </section>
 </div>
 
-<button (click)="Evaluar()">Evaluar</button>
+<!-- <button (click)="Evaluar()">Evaluar</button>
+ --><app-respuesta-gemini></app-respuesta-gemini>
