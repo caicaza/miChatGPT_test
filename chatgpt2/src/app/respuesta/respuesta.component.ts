@@ -26,30 +26,30 @@ export class RespuestaComponent implements OnInit {
   private evaluacionJson: string = `
     {
       "uso_tecnicas_marketing": {
-        "puntuacion": 8,
-        "explicacion": "Ofreció un descuento al comprar dos unidades."
+        "puntuacion": 0,
+        "explicacion": ""
       },
       "profesionalismo": {
-        "puntuacion": 7,
-        "explicacion": "Respondió con claridad y de manera profesional, aunque hubo algunos errores ortográficos."
+        "puntuacion": 0,
+        "explicacion": ""
       },
       "caracter": {
-        "puntuacion": 8,
-        "explicacion": "Mostró alegría y entusiasmo en sus respuestas."
+        "puntuacion": 0,
+        "explicacion": ""
       },
       "atencion_cliente": {
-        "puntuacion": 9,
-        "explicacion": "Respondió rápidamente y atendió la consulta con precisión."
+        "puntuacion": 0,
+        "explicacion": ""
       },
       "conocimiento_producto": {
-        "puntuacion": 8,
-        "explicacion": "Mostró conocimiento sólido sobre el producto y sus características."
+        "puntuacion": 0,
+        "explicacion": ""
       },
       "reaccion_facial": {
-        "puntuacion": 7,
-        "explicacion": "La respuesta escrita no permite evaluar la reacción facial."
+        "puntuacion": 0,
+        "explicacion": ""
       },
-      "consejos_generales": "Mejorar la ortografía y mantener profesionalismo."
+      "consejos_generales": ""
     }
   `;
 

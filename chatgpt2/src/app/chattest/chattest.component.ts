@@ -84,7 +84,7 @@ export class ChattestComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.resizeCanvas();
-    this.setupCanvas();
+    //this.setupCanvas();
   }
 
   async sendMessage() {
@@ -99,16 +99,13 @@ export class ChattestComponent implements OnInit, AfterViewInit {
       this.audioUrl = await this.openaiService.getSpeechAudio();
       
       this.visemes=botResponse.viseme;
+      console.log(botResponse.viseme);
+      
       this.loadImages().then(() => {
         this.startAnimation();
       });
 
-      if (botResponse.audioUrl) { 
-        //this.playAudio();
-      } else {
-        this.audioUrl = null;
-        //this.playAudio();
-      }
+   
     } catch (error) {
       console.error('Error in sendMessage:', error);
       this.addBotMessage('Lo siento, ha ocurrido un error.');

@@ -22,6 +22,8 @@ import { RespuestaComponent } from './respuesta/respuesta.component';
 import { ChatGeminiComponent } from './chat-gemini/chat-gemini.component';
 import { CaptureCameraGeminiComponent } from './capture-camera-gemini/capture-camera-gemini.component';
 import { RespuestaGeminiComponent } from './respuesta-gemini/respuesta-gemini.component';
+import { ViewOpenAIComponent } from './view-open-ai/view-open-ai.component';
+import { ViewGeminiComponent } from './view-gemini/view-gemini.component';
 
 
 @NgModule({
@@ -37,7 +39,9 @@ import { RespuestaGeminiComponent } from './respuesta-gemini/respuesta-gemini.co
     RespuestaComponent,
     ChatGeminiComponent,
     CaptureCameraGeminiComponent,
-    RespuestaGeminiComponent
+    RespuestaGeminiComponent,
+    ViewOpenAIComponent,
+    ViewGeminiComponent
   ],
   imports: [
     BrowserModule,
@@ -54,7 +58,10 @@ import { RespuestaGeminiComponent } from './respuesta-gemini/respuesta-gemini.co
       { path: 'camara', component: CaptureCameraComponent },
       { path: 'viseme', component: VisemeSyncComponent }, 
       { path: 'respuesta', component: RespuestaComponent },     
-      { path: 'camaraGemini', component: CaptureCameraGeminiComponent },      
+      { path: 'camaraGemini', component: CaptureCameraGeminiComponent },
+      { path: 'openAI', component: ViewOpenAIComponent },
+      { path: 'gemini', component: ViewGeminiComponent },      
+      
     ]),
 
   ],

@@ -1,50 +1,65 @@
 <div>
   <h1>Chat Gemini</h1>
 
- 
-  <section >
-    <div class="container  my-2">
-        <div class="row d-flex justify-content-center">
-          <!-- <div class="col-md-10 col-lg-8 col-xl-6"></div> -->
-            <div class="col">
-                <div class="card" id="chat2">
-                    <div class="card-header d-flex justify-content-between align-items-center p-3">
-                        <h5 class="mb-0">Chat</h5>                      
-                    </div>
-                    <div class="card-body chat-body overflow-auto chat-container" style="position: relative;">
-                      <div *ngFor="let message of messages" class="message" [ngClass]="{'user-message': message.sender === 'user', 'bot-message': message.sender === 'bot'}">
-                        {{ message.sender === 'user' ? 'You:' : 'Bot:' }} {{ message.text }}
-                      </div>
-                        
-                      
-                    </div>
-                    <div class="card-footer text-muted d-flex justify-content-start align-items-center p-3 input-container" >
-                        <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp"
-                            alt="avatar 3" style="width: 40px; height: 100%;">
-                        <input type="text" class="form-control form-control-lg" id="exampleFormControlInput1"
-                            placeholder="Escribe un mensaje" [(ngModel)]="message" (keyup.enter)="sendMessage()">
-
-                            <button type="button" class="btn btn-primary" (click)="sendMessage()">Enviar</button>
-                            <button class="btn btn-audio-toggle mx-2" (click)="toggleRecording()">
-                              
-                              <svg *ngIf="isRecording" xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="currentColor" class="bi bi-mic-fill" viewBox="0 0 16 16">
-                                <path d="M5 3a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0z"/>
-                                <path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5"/>
-                              </svg>
-
-                              <svg *ngIf="!isRecording"  xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-mic-mute-fill" viewBox="0 0 16 16">
-                                <path d="M13 8c0 .564-.094 1.107-.266 1.613l-.814-.814A4 4 0 0 0 12 8V7a.5.5 0 0 1 1 0zm-5 4c.818 0 1.578-.245 2.212-.667l.718.719a5 5 0 0 1-2.43.923V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 1 0v1a4 4 0 0 0 4 4m3-9v4.879L5.158 2.037A3.001 3.001 0 0 1 11 3"/>
-                                <path d="M9.486 10.607 5 6.12V8a3 3 0 0 0 4.486 2.607m-7.84-9.253 12 12 .708-.708-12-12z"/>
-                              </svg>
-                              
-                            </button>
-                     
-                    </div>
-                </div>
-            </div>
+  <div class="">
+    <div class="row">
+      <div class="col-sm-5 col-12 px-4">
+        <div class="tec mx-4"  style="max-width: 90%;">
+          <canvas id="responsiveCanvas" #canvas  style="align-items: center;"></canvas>
         </div>
+      </div>
+
+      <div class="col-sm-7 col-12" >
+        <section >
+          <div class="container  my-2">
+              <div class="row d-flex justify-content-center">
+                <!-- <div class="col-md-10 col-lg-8 col-xl-6"></div> -->
+                  <div class="col">
+                      <div class="card" id="chat2">
+                          <div class="card-header d-flex justify-content-between align-items-center p-3">
+                              <h5 class="mb-0">Chat</h5>                      
+                          </div>
+                          <div class="card-body chat-body overflow-auto chat-container" style="position: relative;">
+                            <div *ngFor="let message of messages" class="message" [ngClass]="{'user-message': message.sender === 'user', 'bot-message': message.sender === 'bot'}">
+                              {{ message.sender === 'user' ? 'You:' : 'Bot:' }} {{ message.text }}
+                            </div>
+                              
+                            
+                          </div>
+                          <div class="card-footer text-muted d-flex justify-content-start align-items-center p-3 input-container" >
+                              <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava3-bg.webp"
+                                  alt="avatar 3" style="width: 40px; height: 100%;">
+                              <input type="text" class="form-control form-control-lg" id="exampleFormControlInput1"
+                                  placeholder="Escribe un mensaje" [(ngModel)]="message" (keyup.enter)="sendMessage()">
+      
+                                  <button type="button" class="btn btn-primary" (click)="sendMessage()">Enviar</button>
+                                  <button class="btn btn-audio-toggle mx-2" (click)="toggleRecording()">
+                                    
+                                    <svg *ngIf="isRecording" xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="currentColor" class="bi bi-mic-fill" viewBox="0 0 16 16">
+                                      <path d="M5 3a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0z"/>
+                                      <path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5"/>
+                                    </svg>
+      
+                                    <svg *ngIf="!isRecording"  xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-mic-mute-fill" viewBox="0 0 16 16">
+                                      <path d="M13 8c0 .564-.094 1.107-.266 1.613l-.814-.814A4 4 0 0 0 12 8V7a.5.5 0 0 1 1 0zm-5 4c.818 0 1.578-.245 2.212-.667l.718.719a5 5 0 0 1-2.43.923V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 1 0v1a4 4 0 0 0 4 4m3-9v4.879L5.158 2.037A3.001 3.001 0 0 1 11 3"/>
+                                      <path d="M9.486 10.607 5 6.12V8a3 3 0 0 0 4.486 2.607m-7.84-9.253 12 12 .708-.708-12-12z"/>
+                                    </svg>
+                                    
+                                  </button>
+                           
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+        </section>
+        
+      </div>
     </div>
-  </section>
+
+  </div>
+
+  
 </div>
 
 <!-- <button (click)="Evaluar()">Evaluar</button>
