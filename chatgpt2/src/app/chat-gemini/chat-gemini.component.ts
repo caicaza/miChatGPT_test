@@ -18,6 +18,7 @@ export class ChatGeminiComponent {
 
   reply: string = '';
   isRecording: boolean = false;
+  isRecording2: boolean = false;
   mediaRecorder: MediaRecorder | null = null;
   audioChunks: Blob[] = [];
   audioBlob: Blob | null = null;
@@ -67,21 +68,18 @@ export class ChatGeminiComponent {
 
     //bot
    // this.addBotMessage(this.mensajeInicial);
-    //voice recognition
 
     //voice recognition
     this.getAudioDevices();
     this.voiceService.onSpeechDetected.subscribe((message: string) => {
-      console.log('SPEECH');
       console.log('Speech detected:', message);
       if (message == 'Silence') {
         this.recognizedText = this.voiceService.getVoice();
         console.log("voz obtenida")
-        //this.isRecording=false;
-        this.toggleRecording();
-       console.log(this.recognizedText);
-       // this.userInput=this.recognizedText;
-       // this.sendMessage();
+       //console.log(this.recognizedText);
+        //this.userInput=this.recognizedText;
+        //this.sendMessage();
+        this.manipulaAudios(); //Apagar los detectores de audio
       }
     });
     
@@ -338,6 +336,18 @@ export class ChatGeminiComponent {
     update();
   }
 
+   async toggleRecording(){
+    this.isRecording = this.cambiarBooleano(this.isRecording);
+
+    if (this.isRecording) {
+      this.startRecording();
+    } else {
+      this.stopRecording();
+      
+    }
+  } 
+
+  //Record voice
   //Record voice
   async getAudioDevices() {
     try {
@@ -353,14 +363,11 @@ export class ChatGeminiComponent {
     }
   }
 
-  async toggleRecording(){
-    this.isRecording = this.cambiarBooleano(this.isRecording);
-
-    if (this.isRecording) {
-      this.startRecording();
+  async toggleRecording2() {
+    if (this.isRecording2) {
+      this.stopService();
     } else {
-      this.stopRecording();
-      
+      await this.startService();
     }
   }
 
@@ -388,12 +395,12 @@ export class ChatGeminiComponent {
         this.voiceService.stop();
         this.voiceService.start();
   
-        //this.isRecording = true;
+        this.isRecording2 = true;
   
         const selectedDevice = this.availableDevices.find(device => device.deviceId === this.selectedDeviceId);
         console.log('Using microphone: ', selectedDevice ? selectedDevice.label : 'Unknown device');
   
-        //this.draw();
+       //this.draw();
       } catch (error) {
         console.error('Error accessing selected microphone: ', error);
       }
@@ -404,7 +411,7 @@ export class ChatGeminiComponent {
 
   stopService(): void {
     this.voiceService.stop();
-   //this.isRecording = false;
+    this.isRecording2 = false;
     if (this.mediaStream) {
       this.mediaStream.getTracks().forEach(track => track.stop());
       this.mediaStream = null;
@@ -421,9 +428,13 @@ export class ChatGeminiComponent {
   async onDeviceChange(event: Event) {
     const selectElement = event.target as HTMLSelectElement;
     this.selectedDeviceId = selectElement.value;
-    if (this.isRecording) {
+    if (this.isRecording2) {
       this.stopService();
       await this.startService();
     }
+  }
+  manipulaAudios(){
+    this.toggleRecording();
+    this.toggleRecording2();
   }
 }

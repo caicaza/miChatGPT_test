@@ -33,7 +33,7 @@
                                   placeholder="Escribe un mensaje" [(ngModel)]="message" (keyup.enter)="sendMessage()">
       
                                   <button type="button" class="btn btn-primary" (click)="sendMessage()">Enviar</button>
-                                  <button class="btn btn-audio-toggle mx-2" (click)="toggleRecording()">
+                                  <button class="btn btn-audio-toggle mx-2" (click)="manipulaAudios()">
                                     
                                     <svg *ngIf="isRecording" xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="currentColor" class="bi bi-mic-fill" viewBox="0 0 16 16">
                                       <path d="M5 3a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0z"/>
