@@ -1,51 +1,33 @@
-<button (click)="evaluateVendedor()">Evaluar Vendedor</button>
+
 
 <div *ngIf="evaluacion">
-  <div class="container">
-    <div class="row">
-      <div class="col-3 py-2" *ngFor="let key of objectKeys(evaluacion)">
-        <button type="button" class="btn btn-light" (click)="openModal(getEvaluacionText3(key))">
-          <div class="h-100 p-2 text-center" >
-            <h5>{{ transformarTexto(key) }}</h5>
-            <!-- <p [innerHTML]="getEvaluacionText(key)"></p> -->
-           <strong [innerHTML]="getEvaluacionText2(key)"></strong>
-      
-          </div>
-        </button>
-        
-      </div>
+  <div class="container py-5 m-5">
+    <button class="btn-primary" (click)="evaluateVendedor()">Evaluar Vendedor</button>
 
+    <div class="container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
+      <div class="row w-100">
+        <div class="col-6 col-sm-4 col-md-3 col-lg-3 py-2" *ngFor="let key of objectKeys(evaluacion)">
+          <button type="button" class="btn btn-light btn-custom" (click)="openModal(getEvaluacionText3(key))">
+            <div class="h-100 p-2 text-center d-flex flex-column align-items-center justify-content-center">
+              <h5>{{ transformarTexto(key) }}</h5>
+              <strong [innerHTML]="getEvaluacionText2(key)"></strong>
+            </div>
+          </button>
+        </div>
+      </div>
     </div>
+
   </div>
-  <div  >
-   
-  </div>
+  
 </div>
+
 
  <div id="myModal" class="modal "  tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-content">
-    <span class="close">&times;</span>
-    <div id="modalContent"></div>
+    <span class="close">&times; Consejos</span>
+    <div id="modalContent" class="text-center" style="color: black;"></div>
   </div>
 </div> 
 
-<!-- <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div id="modalContent"></div>
-
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
-      </div>
-    </div>
-  </div>
-</div> -->
 
   

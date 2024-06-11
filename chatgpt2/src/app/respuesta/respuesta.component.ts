@@ -23,11 +23,11 @@ export interface Evaluacion {
 export class RespuestaComponent implements OnInit {
   evaluacion: Evaluacion = {} as Evaluacion; // Inicializar como un objeto vacío
 
-  private evaluacionJson: string = `
+ /*  private evaluacionJson: string = `
     {
       "uso_tecnicas_marketing": {
         "puntuacion": 0,
-        "explicacion": ""
+        "explicacion": "hola"
       },
       "profesionalismo": {
         "puntuacion": 0,
@@ -51,7 +51,13 @@ export class RespuestaComponent implements OnInit {
       },
       "consejos_generales": ""
     }
-  `;
+  `; */
+
+  private evaluacionJson: string = `
+  {
+   
+  }
+`;
 
   constructor(private openaiService: OpenaiService) {
 
@@ -74,6 +80,58 @@ export class RespuestaComponent implements OnInit {
       const aspectoEvaluacion = value as AspectoEvaluacion;
       return `<strong>Puntuación:</strong> ${aspectoEvaluacion.puntuacion}<br><strong>Explicación:</strong> ${aspectoEvaluacion.explicacion}`;
     }
+  }
+
+  getEvaluacionText2(key: string): string {
+    const value = this.evaluacion[key];
+    if (typeof value === 'string') {
+      return '';
+    } else {
+      const aspectoEvaluacion = value as AspectoEvaluacion;
+      return `${aspectoEvaluacion.puntuacion} <span>/10</span> `;
+    }
+  }
+
+  getEvaluacionText3(key: string): string {
+    const value = this.evaluacion[key];
+    if (typeof value === 'string') {
+      return value;
+    } else {
+      const aspectoEvaluacion = value as AspectoEvaluacion;
+      return `${aspectoEvaluacion.explicacion}`;
+    }
+  }
+
+  openModal(explicacion: string) {
+    const modal = document.getElementById('myModal')!;
+    modal.style.display = 'block';
+
+    const modalContent = document.getElementById('modalContent')!;
+    modalContent.innerHTML = explicacion;
+
+    const span = document.getElementsByClassName('close')[0];
+    span.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+  }
+
+  closeModal() {
+    const modal = document.getElementById('myModal')!;
+    modal.style.display = 'none';
+  }
+
+  transformarTexto(texto: string): string {
+    return texto
+      .toLowerCase()
+      .split('_')
+      .map(palabra => palabra.charAt(0).toUpperCase() + palabra.slice(1))
+      .join(' ');
   }
 
   async evaluateVendedor() {

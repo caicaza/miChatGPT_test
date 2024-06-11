@@ -1,9 +1,10 @@
 .custom-card {
-    max-height: 80vh;
+    max-height: 70vh;
     width: 100%;
     max-width: 500px;
     margin: 20px;
-    background-color: #f8f9fa; /* Puedes cambiar este color según tu preferencia */
+    background-color: #1f2831; /* Puedes cambiar este color según tu preferencia */
+    color: white;
     overflow-y: auto; /* Agrega un scroll si el contenido excede la altura */
   }
   

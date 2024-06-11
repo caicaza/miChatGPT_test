@@ -23,7 +23,7 @@ export interface Evaluacion {
 export class RespuestaGeminiComponent implements OnInit {
   evaluacion: Evaluacion = {} as Evaluacion; // Inicializar como un objeto vacío
 
-  private evaluacionJson: string = `
+/*   private evaluacionJson: string = `
     {
       "uso_tecnicas_marketing": {
         "puntuacion": 1,
@@ -44,7 +44,13 @@ export class RespuestaGeminiComponent implements OnInit {
       },
       "consejos_generales": "ffff"
     }
-  `;
+  `; */
+
+  private evaluacionJson: string = `
+  {
+    
+  }
+`;
 
   constructor(private geminiService: GeminiService) {
 
@@ -72,7 +78,7 @@ export class RespuestaGeminiComponent implements OnInit {
   getEvaluacionText2(key: string): string {
     const value = this.evaluacion[key];
     if (typeof value === 'string') {
-      return value;
+      return '';
     } else {
       const aspectoEvaluacion = value as AspectoEvaluacion;
       return `${aspectoEvaluacion.puntuacion} <span>/10</span> `;

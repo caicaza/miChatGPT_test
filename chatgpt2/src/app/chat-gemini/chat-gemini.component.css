@@ -14,7 +14,7 @@
   
   .user-message {
     text-align: right;
-    background-color: #007bff;
+    background-color: #494949;
     color: white;
     border-radius: 10px 10px 0 10px;
     margin-left: auto;
@@ -40,19 +40,19 @@
   
   button {
     padding: 10px 20px;
-    background-color: #007bff;
+    background-color: #ff7300;
     color: white;
     border: none;
     cursor: pointer;
   }
   
   button:hover {
-    background-color: #0056b3;
+    background-color: #bd5500;
   }
   
   @media (min-width: 768px) {
     .chat-body {
-        height: 70vh;
+        height: 65vh;
     }
   }
   @media (max-width: 767.98px) {
@@ -71,7 +71,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #007bff; /* Color de fondo */
+    background-color: #ff7300; /* Color de fondo */
     color: white;
     border: none;
     outline: none;
@@ -81,7 +81,7 @@
   }
   
   .btn-audio-toggle:hover {
-    background-color: #002853; /* Color de fondo al pasar el ratón */
+    background-color: #530000; /* Color de fondo al pasar el ratón */
   }
 
   /* CANVAS */
@@ -109,6 +109,26 @@
 /* Si es necesario, puedes añadir un min-height para asegurarte de que las tarjetas tengan una altura mínima */
 .card {
   min-height: 250px; /* Ajusta este valor según tus necesidades */
+}
+
+/* COLORES DEL CHAT 
+ */.card-header {
+  background-color: #494949 !important; /* Reemplaza con tu color deseado */
+  color: white !important;      /* Reemplaza con tu color de texto deseado */
+}
+
+.card-body {
+  background-color: #707070 !important; /* Reemplaza con tu color deseado */
+  color: white !important;      /* Reemplaza con tu color de texto deseado */
+}
+
+.card-footer {
+  background-color: #494949 !important; /* Reemplaza con tu color deseado */
+  color: white !important;      /* Reemplaza con tu color de texto deseado */
+}
+
+.card {
+  background-color: #707070 !important; 
 }
   
   

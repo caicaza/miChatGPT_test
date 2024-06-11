@@ -1,4 +1,11 @@
-body {
-    background-color: black;
-    color: white; /* Añade este estilo si necesitas cambiar el color del texto */
-  }
+body{
+  color: white!important;
+}
+
+.btn-primary {
+  background-color: #ff7300 !important;
+  border-color: #000000 !important;
+  border-radius: 50px !important;
+  font-weight: bold !important;
+
+}
