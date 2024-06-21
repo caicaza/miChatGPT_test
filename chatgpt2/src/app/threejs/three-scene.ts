@@ -5,10 +5,6 @@ import * as THREE from 'three';
 import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import * as dat from 'dat.gui';
 
-
-
-
-
 @Injectable({
     providedIn: 'root'
   })
@@ -28,9 +24,15 @@ export class ThreeScene {
     private boneFolder !: dat.GUI;
     private boneCtrls: dat.GUIController[] = [];
 
+        //Manipular los bones
+    private bones: THREE.Bone[] = [];
+
+    private clock!: THREE.Clock;
 
 
-  constructor(private window: Window) {}
+  constructor(private window: Window) {
+    this.clock = new THREE.Clock();
+  }
 
   init(containerId: string) {
     this.container = this.window.document.getElementById(containerId) as HTMLDivElement;
@@ -109,7 +111,7 @@ export class ThreeScene {
                 morphMeshes.push(object);
                 }
                 // Añadido: Acceder al esqueleto y a los huesos
-                 if (object instanceof THREE.SkinnedMesh) {
+              if (object instanceof THREE.SkinnedMesh) {
                   const skeleton = object.skeleton;
                   
                   for (let index = 0; index < skeleton.bones.length; index++) {
@@ -122,19 +124,38 @@ export class ThreeScene {
                     }
             
                     boneNames.add(boneName);
+                    this.bones.push(bone); // Guardar referencia al hueso
+
+                     // Inicializar userData
+                     bone.userData['rotationX'] = THREE.MathUtils.radToDeg(bone.rotation.x);
+                     bone.userData['rotationY'] = THREE.MathUtils.radToDeg(bone.rotation.y);
+                     bone.userData['rotationZ'] = THREE.MathUtils.radToDeg(bone.rotation.z);
+
+
                    // console.log(`Bone ${index}: ${boneName}`);
             
                     // Crear controladores para las rotaciones de los huesos
-                    const boneFolder = this.boneFolder.addFolder(`Bone ${index}: ${boneName}`);
+                    const boneFolder = this.boneFolder.addFolder(`Bone ${index}: ${bone.name}`);
+
                     this.boneCtrls.push(
-                        boneFolder.add(bone.rotation, 'x', -Math.PI, Math.PI, 0.01).name('Rotation X').listen()
+                        boneFolder.add(bone.userData, 'rotationX', -180, 180).name('Rotation X').onChange((value) => {
+                            bone.rotation.x = THREE.MathUtils.degToRad(bone.userData['rotationX']);
+                        }).listen()
                     );
+
                     this.boneCtrls.push(
-                        boneFolder.add(bone.rotation, 'y', -Math.PI, Math.PI, 0.01).name('Rotation Y').listen()
+                        boneFolder.add(bone.userData, 'rotationY', -180, 180).name('Rotation Y').onChange((value) => {
+                            bone.rotation.y = THREE.MathUtils.degToRad(bone.userData['rotationY']);
+                        }).listen()
                     );
+
                     this.boneCtrls.push(
-                        boneFolder.add(bone.rotation, 'z', -Math.PI, Math.PI, 0.01).name('Rotation Z').listen()
+                        boneFolder.add(bone.userData, 'rotationZ', -180, 180).name('Rotation Z').onChange((value) => {
+                            bone.rotation.z = THREE.MathUtils.degToRad(bone.userData['rotationZ']);
+                        }).listen()
                     );
+
+
                 }
               } 
           });
@@ -193,14 +214,26 @@ export class ThreeScene {
   }
 
   private animate() {
-    requestAnimationFrame(() => this.animate());    
+    requestAnimationFrame(() => this.animate());
+    const delta = this.clock.getDelta();
+    if (this.mixer) this.mixer.update(delta); // Actualizar el mezclador de animaciones
+
+    // Forzar actualización de huesos después de la animación
+    this.bones.forEach((bone) => {
+      if (bone.userData['rotationX'] !== undefined) {
+          bone.rotation.x = THREE.MathUtils.degToRad(bone.userData['rotationX']);
+      }
+      if (bone.userData['rotationY'] !== undefined) {
+          bone.rotation.y = THREE.MathUtils.degToRad(bone.userData['rotationY']);
+      }
+      if (bone.userData['rotationZ'] !== undefined) {
+          bone.rotation.z = THREE.MathUtils.degToRad(bone.userData['rotationZ']);
+      }
+  });
+
     this.renderer.render(this.scene, this.camera);
-    //Animamos al personaje
-    if (this.mixer) {
-      this.mixer.update(0.05); // Actualiza el mezclador de animaciones (~60fps)
-  }
-  this.renderer.render(this.scene, this.camera);
-  }
+}
+
 }
 
 
