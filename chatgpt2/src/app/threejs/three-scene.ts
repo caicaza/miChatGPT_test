@@ -24,14 +24,23 @@ export class ThreeScene {
     private boneFolder !: dat.GUI;
     private boneCtrls: dat.GUIController[] = [];
 
+    private personalFolder!: dat.GUI;
+    private personalCtrls: dat.GUIController[] = [];
+
         //Manipular los bones
     private bones: THREE.Bone[] = [];
 
     private clock!: THREE.Clock;
 
+    private boneNames;
+
+    private mixerIdle: THREE.AnimationMixer | null = null;
+    private mixerManual: THREE.AnimationMixer | null = null;
+
 
   constructor(private window: Window) {
     this.clock = new THREE.Clock();
+    this.boneNames = new Set<string>();
   }
 
   init(containerId: string) {
@@ -45,7 +54,7 @@ export class ThreeScene {
     const height = this.container.clientHeight;
 
     this.camera = new THREE.PerspectiveCamera(70, width / height, 0.01, 100);
-    this.camera.position.z = 0.5;
+    this.camera.position.z = 0.75;
     this.camera.position.y = 1.5;
 
     this.scene = new THREE.Scene();
@@ -75,6 +84,8 @@ export class ThreeScene {
     this.boneFolder.close(); // Ocultarlo inicialmente
   }
 
+    private initialBonePoses: { [uuid: string]: { position: THREE.Vector3; quaternion: THREE.Quaternion } } = {};
+
   private loadGLTFModel(path: string) {
     const loader = new GLTFLoader();
 
@@ -97,64 +108,43 @@ export class ThreeScene {
             });
 
             // Reproduce todas las animaciones
-            animations.forEach((clip) => {
+            
+            this.mixer.clipAction(animations[0]).play();
+            /* animations.forEach((clip) => {
                 this.mixer.clipAction(clip).play();
-            });
+            }); */
 
             // Añadido: Obtener y listar los morph targets
-            const morphMeshes: any[] = [];
-            const boneNames = new Set<string>();
+            const morphMeshes: any[] = [];            
 
             model.traverse((object) => {
               //Para ver los meshes y morphTargetInfluences
-              if (object instanceof THREE.Mesh && object.morphTargetInfluences && object.geometry) {
-                morphMeshes.push(object);
+              if (object instanceof THREE.Mesh && object.morphTargetInfluences && object.geometry) {                
+                if (object.name == "CC_Base_Body_1") {
+                  console.log(object);
+                  morphMeshes.push(object);
+                }
+                
                 }
                 // Añadido: Acceder al esqueleto y a los huesos
               if (object instanceof THREE.SkinnedMesh) {
                   const skeleton = object.skeleton;
+
+                  // Seleccionar y guardar la pose inicial después de un pequeño delay
+                  
+                  
+                   //Seleccion individual
+                   const boneMandibula = skeleton.bones[40];//CC_Base_JawRoot
                   
                   for (let index = 0; index < skeleton.bones.length; index++) {
                     const bone = skeleton.bones[index];
-                    const boneName = bone.name;
-            
-                    if (boneNames.has(boneName)) {
-                        //console.error(`Duplicate bone name found: ${boneName}. Exiting loop.`);
+
+                    const boneName = bone.name;            
+                    if (this.boneNames.has(boneName)) {                        
                         break;
                     }
             
-                    boneNames.add(boneName);
-                    this.bones.push(bone); // Guardar referencia al hueso
-
-                     // Inicializar userData
-                     bone.userData['rotationX'] = THREE.MathUtils.radToDeg(bone.rotation.x);
-                     bone.userData['rotationY'] = THREE.MathUtils.radToDeg(bone.rotation.y);
-                     bone.userData['rotationZ'] = THREE.MathUtils.radToDeg(bone.rotation.z);
-
-
-                   // console.log(`Bone ${index}: ${boneName}`);
-            
-                    // Crear controladores para las rotaciones de los huesos
-                    const boneFolder = this.boneFolder.addFolder(`Bone ${index}: ${bone.name}`);
-
-                    this.boneCtrls.push(
-                        boneFolder.add(bone.userData, 'rotationX', -180, 180).name('Rotation X').onChange((value) => {
-                            bone.rotation.x = THREE.MathUtils.degToRad(bone.userData['rotationX']);
-                        }).listen()
-                    );
-
-                    this.boneCtrls.push(
-                        boneFolder.add(bone.userData, 'rotationY', -180, 180).name('Rotation Y').onChange((value) => {
-                            bone.rotation.y = THREE.MathUtils.degToRad(bone.userData['rotationY']);
-                        }).listen()
-                    );
-
-                    this.boneCtrls.push(
-                        boneFolder.add(bone.userData, 'rotationZ', -180, 180).name('Rotation Z').onChange((value) => {
-                            bone.rotation.z = THREE.MathUtils.degToRad(bone.userData['rotationZ']);
-                        }).listen()
-                    );
-
+                    this.selectBones(bone,index);
 
                 }
               } 
@@ -171,12 +161,14 @@ export class ThreeScene {
                         this.morphCtrls.push(nameCtrl);
                     }
                     for (let i = 0; i < mesh.morphTargetInfluences.length; i++) {
+                      
                         const ctrl = this.morphFolder
                             .add(mesh.morphTargetInfluences, i, 0, 1, 0.01)
                             .listen();
                         Object.keys(mesh.morphTargetDictionary).forEach((key) => {
                             if (key && mesh.morphTargetDictionary[key] === i) ctrl.name(key);
                         });
+                        //console.log('index:'+i+' morph:'+ctrl);
                         this.morphCtrls.push(ctrl);
                     }
                 });
@@ -189,6 +181,47 @@ export class ThreeScene {
     );
 }
 
+
+
+private selectBones(bone: THREE.Bone<THREE.Object3DEventMap>, index: number) {
+    const boneName = bone.name;
+
+    if (!this.boneNames.has(boneName)) {
+        this.boneNames.add(boneName);
+        this.bones.push(bone); // Guardar referencia al hueso
+
+        // Guardar la pose inicial
+        //this.initialBonePoses[boneName] = bone.rotation.clone();
+
+        // Inicializar userData
+        bone.userData['rotationX'] = THREE.MathUtils.radToDeg(bone.rotation.x);
+        bone.userData['rotationY'] = THREE.MathUtils.radToDeg(bone.rotation.y);
+        bone.userData['rotationZ'] = THREE.MathUtils.radToDeg(bone.rotation.z);
+
+        console.log(`Bone ${index}: ${boneName}`);
+
+        // Crear controladores para las rotaciones de los huesos
+        const boneFolder = this.boneFolder.addFolder(`Bone ${index}: ${bone.name}`);
+
+        this.boneCtrls.push(
+            boneFolder.add(bone.userData, 'rotationX', -180, 180).name('Rotation X').onChange((value) => {
+                bone.rotation.x = THREE.MathUtils.degToRad(bone.userData['rotationX']);
+            }).listen()
+        );
+
+        this.boneCtrls.push(
+            boneFolder.add(bone.userData, 'rotationY', -180, 180).name('Rotation Y').onChange((value) => {
+                bone.rotation.y = THREE.MathUtils.degToRad(bone.userData['rotationY']);
+            }).listen()
+        );
+
+        this.boneCtrls.push(
+            boneFolder.add(bone.userData, 'rotationZ', -180, 180).name('Rotation Z').onChange((value) => {
+                bone.rotation.z = THREE.MathUtils.degToRad(bone.userData['rotationZ']);
+            }).listen()
+        );
+    }
+}
 
 
   private addLights() {
@@ -218,21 +251,33 @@ export class ThreeScene {
     const delta = this.clock.getDelta();
     if (this.mixer) this.mixer.update(delta); // Actualizar el mezclador de animaciones
 
-    // Forzar actualización de huesos después de la animación
+    // Restaurar poses iniciales de los huesos
     this.bones.forEach((bone) => {
-      if (bone.userData['rotationX'] !== undefined) {
-          bone.rotation.x = THREE.MathUtils.degToRad(bone.userData['rotationX']);
-      }
-      if (bone.userData['rotationY'] !== undefined) {
-          bone.rotation.y = THREE.MathUtils.degToRad(bone.userData['rotationY']);
-      }
-      if (bone.userData['rotationZ'] !== undefined) {
-          bone.rotation.z = THREE.MathUtils.degToRad(bone.userData['rotationZ']);
+      const initialBonePose = this.initialBonePoses[bone.uuid];
+      if (initialBonePose) {
+          bone.position.copy(initialBonePose.position);
+          bone.quaternion.copy(initialBonePose.quaternion);
       }
   });
 
+    // Forzar actualización de huesos después de la animación
+/*    this.bones.forEach((bone) => {
+        if (bone.userData['rotationX'] !== undefined) {
+            bone.rotation.x = THREE.MathUtils.degToRad(bone.userData['rotationX']);
+        }
+        if (bone.userData['rotationY'] !== undefined) {
+            bone.rotation.y = THREE.MathUtils.degToRad(bone.userData['rotationY']);
+        }
+        if (bone.userData['rotationZ'] !== undefined) {
+            bone.rotation.z = THREE.MathUtils.degToRad(bone.userData['rotationZ']);
+        }
+    });  
+ */
+
     this.renderer.render(this.scene, this.camera);
 }
+
+
 
 }
 
