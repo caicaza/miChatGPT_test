@@ -173,8 +173,11 @@ export class ThreeScene {
     for (const name of Object.keys(additiveActions) as AdditiveAction[]) {
       const settings = additiveActions[name];
 
+      
+
       panelSettings[name] = settings.weight;
-      folder2.add(panelSettings, name, 0.0, 1.0, 0.01).listen().onChange((weight: number) => {
+      folder2.add(panelSettings, name).listen().onChange((weight: number) => {
+        console.log('change');
         this.setWeight(settings.action, weight);
         settings.weight = weight;
       });
@@ -276,7 +279,7 @@ export class ThreeScene {
     }
   }
 
-  private setWeight(action: THREE.AnimationAction | undefined, weight: number) {
+/*   private setWeight(action: THREE.AnimationAction | undefined, weight: number) {
     if (action) {
       action.enabled = true;
       action.setEffectiveTimeScale(1);
@@ -301,7 +304,54 @@ export class ThreeScene {
           action.setEffectiveWeight(weight);
         }
     }
-  }
+  } */
+
+/*     setWeight( action: THREE.AnimationAction | undefined, weight: number) {
+      if (action) {
+        action.enabled = true;
+        action.setEffectiveTimeScale( 1 );
+        action.setEffectiveWeight( weight );
+      }
+
+      
+
+    } */
+
+      setWeight(action: THREE.AnimationAction | undefined, targetWeight: number, duration: number = 1) {
+        let actionType;
+      if (action) {
+         actionType = this.getActionType(action);       
+      }
+      
+        if (actionType === 'additive') {
+          if (!action) return;
+          const initialWeight = action.getEffectiveWeight();
+          const deltaWeight = targetWeight - initialWeight;
+          const start = performance.now();
+      
+          function updateWeight() {
+            const elapsed = performance.now() - start;
+            const progress = Math.min(elapsed / (duration * 1000), 1);
+            const newWeight = initialWeight + deltaWeight * progress;
+            if (action) {
+              action.setEffectiveWeight(newWeight);
+            }
+      
+            if (progress < 1) {
+              requestAnimationFrame(updateWeight);
+            }
+          }
+      
+          updateWeight();
+        }else{
+          if (action) {
+            action.enabled = true;
+            action.setEffectiveTimeScale( 1 );
+            action.setEffectiveWeight( targetWeight );
+          }
+        }
+      }
+    
   
   getActionType(action: THREE.AnimationAction): 'base' | 'additive' {
     const clip = action.getClip();
