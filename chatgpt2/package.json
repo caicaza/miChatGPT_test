@@ -23,10 +23,13 @@
     "bootstrap": "^5.3.3",
     "dat.gui": "^0.7.9",
     "express": "^4.19.2",
+    "lil-gui": "^0.19.2",
     "ngx-webcam": "^0.4.1",
     "openai": "^4.47.1",
     "rxjs": "~7.8.0",
+    "stats.js": "^0.17.0",
     "three": "^0.165.0",
+    "three-orbitcontrols": "^2.110.3",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.3"
   },
