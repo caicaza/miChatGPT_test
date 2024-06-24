@@ -5,7 +5,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 type BaseAction = 'Idle';
-type AdditiveAction = 'open_mouth';
+type AdditiveAction = 'openMouth';
 
 interface ActionSettings {
   weight: number;
@@ -17,7 +17,7 @@ const baseActions: Record<BaseAction, ActionSettings> = {
 };
 
 const additiveActions: Record<AdditiveAction, ActionSettings> = {
-  open_mouth: { weight: 0 }
+  openMouth: { weight: 0 }
 };
 
 const crossFadeControls: any[] = [];
@@ -27,6 +27,9 @@ const allActions: THREE.AnimationAction[] = [];
 interface AnimationMixerEvent extends THREE.Event {
   action: THREE.AnimationAction;
 }
+
+let lipOpenMorphTarget: { mesh: THREE.Mesh; index: number } | null = null;
+
 
 export class ThreeScene {
   private scene!: THREE.Scene;
@@ -65,17 +68,9 @@ export class ThreeScene {
     dirLight.shadow.camera.far = 40;
     this.scene.add(dirLight);
 
-/*     const mesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(100, 100),
-      new THREE.MeshPhongMaterial({ color: 0xcbcbcb, depthWrite: false })
-    ); 
-    mesh.rotation.x = -Math.PI / 2;
-    mesh.receiveShadow = true;
-    this.scene.add(mesh);
-    */
-
     const loader = new GLTFLoader();
-    loader.load('assets/models/chica19.glb', (gltf) => {
+    loader.load('assets/models/Chica_sim1.glb', (gltf) => {
+      //Cargar escena
       const model = gltf.scene;
       this.scene.add(model);
 
@@ -86,6 +81,8 @@ export class ThreeScene {
       const animations = gltf.animations;
       this.mixer = new THREE.AnimationMixer(model);
       const numAnimations = animations.length;
+
+      //Animaciones  de los huesos
 
       for (let i = 0; i < numAnimations; ++i) {
         let clip = animations[i];
@@ -98,8 +95,7 @@ export class ThreeScene {
           allActions.push(action);
         } else if (name in additiveActions) {
           THREE.AnimationUtils.makeClipAdditive(clip);
-          //Controlar frames
-          //let clip2 = THREE.AnimationUtils.subclip( clip, clip.name, 2, 10, 30 );
+          
           const action = this.mixer.clipAction(clip);
           this.activateAction(action);
           additiveActions[name as AdditiveAction].action = action;
@@ -107,9 +103,35 @@ export class ThreeScene {
         }
       }
 
+      //Morphs expresiones faciales
+      const morphMeshes: any[] = [];            
+
+            model.traverse((object) => {
+              //Para ver los meshes y morphTargetInfluences
+              if (object instanceof THREE.Mesh && object.morphTargetInfluences && object.geometry) {                
+                if (object.name == "CC_Base_Body_1") {
+                  console.log(object);
+                  morphMeshes.push(object);
+
+                  const morphTargetDictionary = object.morphTargetDictionary;
+                  if (morphTargetDictionary) {
+                    if ('LipOpen' in morphTargetDictionary) {
+                      lipOpenMorphTarget = { mesh: object, index: morphTargetDictionary['LipOpen'] };
+                    }
+                  }
+                }
+              }               
+          });
+
+         
+
       this.createPanel();
       this.renderer.setAnimationLoop(this.animate.bind(this));
+
+      
     });
+
+
 
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     //this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -147,6 +169,8 @@ export class ThreeScene {
     const folder1 = panel.addFolder('Base Actions');
     const folder2 = panel.addFolder('Additive Action Weights');
     const folder3 = panel.addFolder('General Speed');
+    const folder4 = panel.addFolder('Custom Animations');
+
 
     const panelSettings: any = {
       'modify time scale': 1.0
@@ -183,11 +207,21 @@ export class ThreeScene {
       });
     }
 
+    // Add custom animation A_mouth control
+    panelSettings['A_mouth'] = 0.0;
+    folder4.add(panelSettings, 'A_mouth', 0.0, 1.0, 0.01).listen().onChange((weight: number) => {
+        console.log('A_mouth change');
+        const openMouthAction = additiveActions['openMouth'].action;
+        this.setWeight(openMouthAction, weight);
+        panelSettings['A_mouth'] = weight;
+    });
+
     folder3.add(panelSettings, 'modify time scale', 0.0, 1.5, 0.01).onChange(this.modifyTimeScale.bind(this));
 
     folder1.open();
     folder2.open();
     folder3.open();
+    folder4.open();
 
     crossFadeControls.forEach((control) => {
       control.setInactive = () => {
