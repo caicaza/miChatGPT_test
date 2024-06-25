@@ -117,24 +117,14 @@ export class ThreeScene {
           }
         }               
     });
-
-    /* if (this.morphMeshes.length) {
-      this.createMorphFolder(morphMeshes);
-    }   */    
-
-         
-      
+        
       this.createPanel();
       this.renderer.setAnimationLoop(this.animate.bind(this));
-
       
     });
 
-
-
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
-    //this.renderer.setPixelRatio(window.devicePixelRatio);
-    //this.renderer.setSize(window.innerWidth, window.innerHeight);//Tamaño de la ventana
+    this.renderer = new THREE.WebGLRenderer({ antialias: true });   
+    
     this.renderer.shadowMap.enabled = true;
     if (this.container) {
       this.container.appendChild(this.renderer.domElement);
@@ -144,14 +134,14 @@ export class ThreeScene {
     const height = this.container.clientHeight;
 
     this.camera = new THREE.PerspectiveCamera(70, width / height, 0.01, 100);
-    this.camera.position.set(0, 1.25, 0.75);
+    this.camera.position.set(0, 1.5, 0.75);
     this.renderer.setSize(width, height);
 
 
     const controls = new OrbitControls(this.camera, this.renderer.domElement);
     controls.enablePan = false;
     controls.enableZoom = false;
-    controls.target.set(0, 1.25, 0);
+    controls.target.set(0, 1.4, 0);
     controls.update();
 
     this.stats = new Stats();
@@ -159,7 +149,6 @@ export class ThreeScene {
       this.container.appendChild(this.stats.dom);
     }
 
-    //this.window.addEventListener('resize', this.onWindowResize.bind(this));
   }
 
   private createPanel() {
@@ -222,7 +211,7 @@ export class ThreeScene {
       const index = mesh.morphTargetDictionary[morphName];
       if (index !== undefined) {
         panelSettings[morphName] = mesh.morphTargetInfluences[index];
-        folder4.add(panelSettings, morphName, 0.0, 1.0, 0.01).listen().onChange((weight: number) => {
+        folder5.add(panelSettings, morphName, 0.0, 1.0, 0.01).listen().onChange((weight: number) => {
           console.log(morphName + ' change');
           mesh.morphTargetInfluences[index] = weight;
         });
@@ -234,8 +223,10 @@ export class ThreeScene {
 
     folder1.open();
     folder2.open();
+    folder4.open();    
+    folder5.open();
     folder3.open();
-    folder4.open();
+    
 
     crossFadeControls.forEach((control) => {
       control.setInactive = () => {
@@ -333,10 +324,7 @@ setWeight(action: THREE.AnimationAction | undefined, targetWeight: number, durat
 
   const actionType = this.getActionType(action);
 
-  if (actionType === 'additive' && action.getClip().name === 'A_mouth') {
-    console.log('A_mouth');
-      this.setAMouthWeight(action, targetWeight, duration);
-  } else if (actionType === 'additive') {
+  if (actionType === 'additive') {
       const initialWeight = action.getEffectiveWeight();
       const deltaWeight = targetWeight - initialWeight;
       const start = performance.now();
@@ -366,20 +354,12 @@ setWeight_A(action: THREE.AnimationAction | undefined, targetWeight: number, dur
   const actionType = this.getActionType(action);
 
   if (actionType === 'additive') {
-    console.log('A_mouth');
-      this.setAMouthWeight(action, targetWeight, duration);
-  }  action.setEffectiveWeight(targetWeight);
-  
-}
-
-    
-      private setAMouthWeight(action: THREE.AnimationAction | undefined, targetWeight: number, duration: number = 2) {
-        console.log('LipOpen');
-        if (!action) return;
+    if (!action) return;
     
         const initialWeight = action.getEffectiveWeight();
         const deltaWeight = targetWeight - initialWeight;
         const start = performance.now();
+        console.log();
     
         const updateWeight = () => {
             const elapsed = performance.now() - start;
@@ -389,7 +369,42 @@ setWeight_A(action: THREE.AnimationAction | undefined, targetWeight: number, dur
     
             // Sincronizar el morph target LipOpen
             const lipOpenMorphTarget = this.getMorphTarget('Tight-O');
-            console.log('LipOpen');
+            
+            //console.log(lipOpenMorphTarget);
+            if (lipOpenMorphTarget) {
+                lipOpenMorphTarget.mesh.morphTargetInfluences[lipOpenMorphTarget.index] = newWeight;
+            }
+    
+            if (progress < 1) {
+                requestAnimationFrame(updateWeight);
+            }
+        };
+    
+    updateWeight();
+    /* console.log('A_mouth');
+      this.setAMouthWeight(action, targetWeight, duration); */
+  }  
+  //action.setEffectiveWeight(targetWeight);
+  
+}    
+      private setAMouthWeight(action: THREE.AnimationAction | undefined, targetWeight: number, duration: number = 2) {
+        console.log('LipOpen');
+        if (!action) return;
+    
+        const initialWeight = action.getEffectiveWeight();
+        const deltaWeight = targetWeight - initialWeight;
+        const start = performance.now();
+        console.log();
+    
+        const updateWeight = () => {
+            const elapsed = performance.now() - start;
+            const progress = Math.min(elapsed / (duration * 1000), 1);
+            const newWeight = initialWeight + deltaWeight * progress;
+            action.setEffectiveWeight(newWeight);
+    
+            // Sincronizar el morph target LipOpen
+            const lipOpenMorphTarget = this.getMorphTarget('Tight-O');
+            
             //console.log(lipOpenMorphTarget);
             if (lipOpenMorphTarget) {
                 lipOpenMorphTarget.mesh.morphTargetInfluences[lipOpenMorphTarget.index] = newWeight;
