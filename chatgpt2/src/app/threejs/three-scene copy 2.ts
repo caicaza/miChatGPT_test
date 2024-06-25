@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import Stats from 'three/examples/jsm/libs/stats.module.js';
+import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
@@ -45,6 +47,7 @@ export class ThreeScene {
   private scene!: THREE.Scene;
   private renderer!: THREE.WebGLRenderer;
   private camera!: THREE.PerspectiveCamera;
+  private stats!: Stats;
   private container: HTMLDivElement | null = null;
   private mixer!: THREE.AnimationMixer;
   private clock!: THREE.Clock;
@@ -178,11 +181,20 @@ export class ThreeScene {
     controls.target.set(0, 1.4, 0);
     controls.update();
 
-   
+    this.stats = new Stats();
+    if (this.container) {
+      this.container.appendChild(this.stats.dom);
+    }
   }
 
   private createPanel() {
+    const panel = new GUI({ width: 310 });
 
+    const folder1 = panel.addFolder('Base Actions');
+    const folder2 = panel.addFolder('Additive Action Weights');    
+    const folder4 = panel.addFolder('Custom Animations');
+    const folder5 = panel.addFolder('Morph Targets');
+    const folder3 = panel.addFolder('General Speed');
     const panelSettings: any = {
       'modify time scale': 1.0
     };
@@ -201,26 +213,27 @@ export class ThreeScene {
           this.prepareCrossFade(currentAction || null, action || null, 0.35);
         }
       };
+      crossFadeControls.push(folder1.add(panelSettings, name));
     }
 
     for (const name of Object.keys(additiveActions) as AdditiveAction[]) {
       const settings = additiveActions[name];
       panelSettings[name] = settings.weight;
-      /* folder2.add(panelSettings, name).listen().onChange((weight: number) => {
+      folder2.add(panelSettings, name).listen().onChange((weight: number) => {
         //console.log('change');
         this.setWeight(settings.action, weight);
         settings.weight = weight;
-      }); */
+      });
     }
 
     // Add custom animation A_mouth control
     this.visemesCharacter.forEach(element => {
       panelSettings[element.nombre] = 0.0;
-      /* folder4.add(panelSettings, element.nombre, 0.0, 1.0, 0.01).listen().onChange((weight: number) => {
+      folder4.add(panelSettings, element.nombre, 0.0, 1.0, 0.01).listen().onChange((weight: number) => {
           const openMouthAction = additiveActions['openMouth'].action;
           this.setWeight_A(openMouthAction, weight, 1, element.morphTarject, element.isOpenMouth, element.porcentaje, element.porcentajeMorph);
           panelSettings[element.nombre] = weight;
-      });  */
+      }); 
       
     });
   
@@ -235,10 +248,10 @@ export class ThreeScene {
             const index = mesh.morphTargetDictionary[morphName];
             if (index !== undefined) {
               panelSettings[morphName] = mesh.morphTargetInfluences[index];
-              /* folder5.add(panelSettings, morphName, 0.0, 1.0, 0.01).listen().onChange((weight: number) => {
+              folder5.add(panelSettings, morphName, 0.0, 1.0, 0.01).listen().onChange((weight: number) => {
                 console.log(morphName + ' change');
                 mesh.morphTargetInfluences[index] = weight;
-              }); */
+              });
             }
           }
         }        
@@ -252,10 +265,10 @@ export class ThreeScene {
             const index = mesh.morphTargetDictionary[morphName];
             if (index !== undefined) {
               panelSettings[morphName2] = mesh.morphTargetInfluences[index];
-              /* folder5.add(panelSettings, morphName2, 0.0, 1.0, 0.01).listen().onChange((weight: number) => {
+              folder5.add(panelSettings, morphName2, 0.0, 1.0, 0.01).listen().onChange((weight: number) => {
                 console.log(morphName2 + ' change');
                 mesh.morphTargetInfluences[index] = weight;
-              }); */
+              });
             }
           }
         }         
@@ -267,13 +280,13 @@ export class ThreeScene {
     
   });
 
-/*     folder3.add(panelSettings, 'modify time scale', 0.0, 1.5, 0.01).onChange(this.modifyTimeScale.bind(this));
+    folder3.add(panelSettings, 'modify time scale', 0.0, 1.5, 0.01).onChange(this.modifyTimeScale.bind(this));
 
     folder1.open();
     folder2.open();
     folder4.open();    
     folder5.open();
-    folder3.open();   */  
+    folder3.open();    
 
     crossFadeControls.forEach((control) => {
       control.setInactive = () => {
@@ -494,6 +507,7 @@ setWeight_A(action: THREE.AnimationAction | undefined, targetWeight: number, dur
     const mixerUpdateDelta = this.clock.getDelta();
     this.mixer.update(mixerUpdateDelta);
     this.renderer.render(this.scene, this.camera);
+    this.stats.update();
   }
 }
 
