@@ -28,7 +28,20 @@ interface AnimationMixerEvent extends THREE.Event {
   action: THREE.AnimationAction;
 }
 
-let lipOpenMorphTarget: { mesh: THREE.Mesh; index: number } | null = null;
+const allowedMorphNames = [
+  'Lip_Open', 'Mouth_Widen', 'Mouth_Plosive', 'Mouth_Lips_Part', 
+  'Dental_Lip', 'Mouth_Lips_Open', 'Mouth_Pucker_Open', 'Mouth_Open', 
+  'Eye_Blink', 'Tight-O'
+];
+
+interface Viseme {
+  nombre: string;
+  tiempo: number;
+  isOpenMouth: boolean;
+  morphTarject: string;
+  porcentaje: number;
+  porcentajeMorph: number;
+}
 
 
 export class ThreeScene {
@@ -41,7 +54,32 @@ export class ThreeScene {
   private clock!: THREE.Clock;
   private boneNames!: Set<string>;
 
-  morphMeshes: any[] = [];    
+  morphMeshes: any[] = [];   
+  
+  private visemesCharacter: Viseme[] = [
+    { nombre: "1_viseme", tiempo: 0.3,isOpenMouth: true, morphTarject:'Lip_Open', porcentaje: 0.3, porcentajeMorph: 1  },
+    { nombre: "2_viseme", tiempo: 0.3,isOpenMouth: true, morphTarject:'Mouth_Lips_Open', porcentaje: 0.1, porcentajeMorph: 0.5 },
+    { nombre: "3_viseme", tiempo: 0.3,isOpenMouth: true, morphTarject:'Mouth_Pucker_Open', porcentaje: 0.2, porcentajeMorph: 0.5 },
+    { nombre: "4_viseme", tiempo: 0.3,isOpenMouth: true, morphTarject:'Mouth_Lips_Open', porcentaje: 0.2, porcentajeMorph: 0.3 },
+    { nombre: "5_viseme", tiempo: 0.3,isOpenMouth: false, morphTarject:'Mouth_Lips_Open', porcentaje: 0.4, porcentajeMorph: 0.5 },
+    { nombre: "6_viseme", tiempo: 0.3,isOpenMouth: true, morphTarject:'Mouth_Lips_Open', porcentaje: 0.2, porcentajeMorph: 0.5 },
+    { nombre: "7_viseme", tiempo: 0.3,isOpenMouth: true, morphTarject:'Mouth_Pucker_Open', porcentaje: 0.3, porcentajeMorph: 0.6 },
+    { nombre: "8_viseme", tiempo: 0.3,isOpenMouth: true, morphTarject:'Tight-O', porcentaje: 0.4, porcentajeMorph: 0.7 },
+    { nombre: "9_viseme", tiempo: 0.3,isOpenMouth: true, morphTarject:'Mouth_Lips_Open', porcentaje: 0.25, porcentajeMorph: 0.3 },
+    { nombre: "10_viseme", tiempo: 0.3,isOpenMouth: false, morphTarject:'Mouth_Pucker_Open', porcentaje: 0.4, porcentajeMorph: 0.7 },
+    { nombre: "11_viseme", tiempo: 0.3,isOpenMouth: true, morphTarject:'Mouth_Open', porcentaje: 0.2, porcentajeMorph: 0.4 },
+    { nombre: "12_viseme", tiempo: 0.3,isOpenMouth: true, morphTarject:'Mouth_Pucker_Open', porcentaje: 0.2, porcentajeMorph: 0.35 },
+    { nombre: "13_viseme", tiempo: 0.3,isOpenMouth: true, morphTarject:'Mouth_Pucker_Open', porcentaje: 0.3, porcentajeMorph: 0.5 },
+    { nombre: "14_viseme", tiempo: 0.3,isOpenMouth: true, morphTarject:'Mouth_Lips_Open', porcentaje: 0.25, porcentajeMorph: 0.3},
+    { nombre: "15_viseme", tiempo: 0.3,isOpenMouth: false, morphTarject:'Mouth_Lips_Open', porcentaje: 0.25, porcentajeMorph: 0.35},
+    { nombre: "16_viseme", tiempo: 0.3,isOpenMouth: false, morphTarject:'Mouth_Pucker_Open', porcentaje: 0.4, porcentajeMorph: 0.6 },
+    { nombre: "17_viseme", tiempo: 0.3,isOpenMouth: true, morphTarject:'Mouth_Lips_Open', porcentaje: 0.2, porcentajeMorph: 0.45 },
+    { nombre: "18_viseme", tiempo: 0.3,isOpenMouth: true, morphTarject:'Mouth_Plosive', porcentaje: 0.4, porcentajeMorph: 1 },
+    { nombre: "19_viseme", tiempo: 0.3,isOpenMouth: true, morphTarject:'Mouth_Open', porcentaje: 0.4, porcentajeMorph: 0.5 },
+    { nombre: "20_viseme", tiempo: 0.3,isOpenMouth: true, morphTarject:'Mouth_Open-O', porcentaje: 0.6, porcentajeMorph: 1 },
+    { nombre: "21_viseme", tiempo: 0.3,isOpenMouth: true, morphTarject:'Tight-O', porcentaje: 0, porcentajeMorph: 0 },
+  
+  ];
 
   constructor(private window: Window) {
     this.clock = new THREE.Clock();
@@ -111,7 +149,12 @@ export class ThreeScene {
         //Para ver los meshes y morphTargetInfluences
         if (object instanceof THREE.Mesh && object.morphTargetInfluences && object.geometry) {                
           if (object.name == "CC_Base_Body_1") {
-            console.log(object);
+            //console.log(object);
+            this.morphMeshes.push(object);
+
+          }
+          if (object.name == "CC_Base_Body_6") {
+            //console.log(object);
             this.morphMeshes.push(object);
 
           }
@@ -190,33 +233,74 @@ export class ThreeScene {
 
       panelSettings[name] = settings.weight;
       folder2.add(panelSettings, name).listen().onChange((weight: number) => {
-        console.log('change');
+        //console.log('change');
         this.setWeight(settings.action, weight);
         settings.weight = weight;
       });
     }
 
     // Add custom animation A_mouth control
-    panelSettings['A_mouth'] = 0.0;
-    folder4.add(panelSettings, 'A_mouth', 0.0, 1.0, 0.01).listen().onChange((weight: number) => {
-        console.log('A_mouth changesdsad');
-        const openMouthAction = additiveActions['openMouth'].action;
-        this.setWeight_A(openMouthAction, weight);
-        panelSettings['A_mouth'] = weight;
+    this.visemesCharacter.forEach(element => {
+      panelSettings[element.nombre] = 0.0;
+      folder4.add(panelSettings, element.nombre, 0.0, 1.0, 0.01).listen().onChange((weight: number) => {
+          const openMouthAction = additiveActions['openMouth'].action;
+          this.setWeight_A(openMouthAction, weight, 1, element.morphTarject, element.isOpenMouth, element.porcentaje, element.porcentajeMorph);
+          panelSettings[element.nombre] = weight;
+      }); 
+      
     });
+    /* 
+    let miVisema=this.visemesCharacter[0];
+    panelSettings[miVisema.nombre] = 0.0;
+    folder4.add(panelSettings, miVisema.nombre, 0.0, 1.0, 0.01).listen().onChange((weight: number) => {
+        const openMouthAction = additiveActions['openMouth'].action;
+        this.setWeight_A(openMouthAction, weight, 1, miVisema.morphTarject);
+        panelSettings[miVisema.nombre] = weight;
+    }); 
+    */
 
    // Add morph targets control
-  this.morphMeshes.forEach((mesh) => {
-    for (const morphName in mesh.morphTargetDictionary) {
-      const index = mesh.morphTargetDictionary[morphName];
-      if (index !== undefined) {
-        panelSettings[morphName] = mesh.morphTargetInfluences[index];
-        folder5.add(panelSettings, morphName, 0.0, 1.0, 0.01).listen().onChange((weight: number) => {
-          console.log(morphName + ' change');
-          mesh.morphTargetInfluences[index] = weight;
-        });
-      }
+  this.morphMeshes.forEach((mesh,index) => {
+    //console.log(this.morphMeshes[0].name);
+    console.log(index);
+    switch (index) {
+      case 0:
+        for (const morphName in mesh.morphTargetDictionary) {
+          if (allowedMorphNames.includes(morphName)) {
+            const index = mesh.morphTargetDictionary[morphName];
+            if (index !== undefined) {
+              panelSettings[morphName] = mesh.morphTargetInfluences[index];
+              folder5.add(panelSettings, morphName, 0.0, 1.0, 0.01).listen().onChange((weight: number) => {
+                console.log(morphName + ' change');
+                mesh.morphTargetInfluences[index] = weight;
+              });
+            }
+          }
+        }        
+        break;
+      case 1:
+        for (const morphName in mesh.morphTargetDictionary) {
+          //solo para animar parpados
+          if (allowedMorphNames.includes(morphName) && morphName=='Eye_Blink') {
+            console.log(morphName);
+            let morphName2=morphName+"_2";
+            const index = mesh.morphTargetDictionary[morphName];
+            if (index !== undefined) {
+              panelSettings[morphName2] = mesh.morphTargetInfluences[index];
+              folder5.add(panelSettings, morphName2, 0.0, 1.0, 0.01).listen().onChange((weight: number) => {
+                console.log(morphName2 + ' change');
+                mesh.morphTargetInfluences[index] = weight;
+              });
+            }
+          }
+        } 
+        
+        break;
+    
+      default:
+        break;
     }
+    
   });
 
     folder3.add(panelSettings, 'modify time scale', 0.0, 1.5, 0.01).onChange(this.modifyTimeScale.bind(this));
@@ -348,7 +432,7 @@ setWeight(action: THREE.AnimationAction | undefined, targetWeight: number, durat
   }
 }
 
-setWeight_A(action: THREE.AnimationAction | undefined, targetWeight: number, duration: number = 2) {
+setWeight_A(action: THREE.AnimationAction | undefined, targetWeight: number, duration: number = 2, morph: string, isOpenMouth:boolean = false, porcentaje:number=1, porcentajeMorph: number = 1) {
   if (!action) return;
 
   const actionType = this.getActionType(action);
@@ -359,20 +443,22 @@ setWeight_A(action: THREE.AnimationAction | undefined, targetWeight: number, dur
         const initialWeight = action.getEffectiveWeight();
         const deltaWeight = targetWeight - initialWeight;
         const start = performance.now();
-        console.log();
     
         const updateWeight = () => {
             const elapsed = performance.now() - start;
             const progress = Math.min(elapsed / (duration * 1000), 1);
             const newWeight = initialWeight + deltaWeight * progress;
-            action.setEffectiveWeight(newWeight);
+            if (isOpenMouth) {
+              action.setEffectiveWeight(newWeight*porcentaje);
+            }
+            
     
             // Sincronizar el morph target LipOpen
-            const lipOpenMorphTarget = this.getMorphTarget('Tight-O');
+            const lipOpenMorphTarget = this.getMorphTarget(morph);
             
             //console.log(lipOpenMorphTarget);
             if (lipOpenMorphTarget) {
-                lipOpenMorphTarget.mesh.morphTargetInfluences[lipOpenMorphTarget.index] = newWeight;
+                lipOpenMorphTarget.mesh.morphTargetInfluences[lipOpenMorphTarget.index] = newWeight*porcentajeMorph;
             }
     
             if (progress < 1) {
@@ -394,7 +480,6 @@ setWeight_A(action: THREE.AnimationAction | undefined, targetWeight: number, dur
         const initialWeight = action.getEffectiveWeight();
         const deltaWeight = targetWeight - initialWeight;
         const start = performance.now();
-        console.log();
     
         const updateWeight = () => {
             const elapsed = performance.now() - start;
