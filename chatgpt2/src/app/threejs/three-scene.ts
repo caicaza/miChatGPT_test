@@ -41,6 +41,9 @@ interface Viseme {
   porcentajeMorph: number;
 }
 
+type VisemeFunction = () => void;
+
+
 export class ThreeScene {
   private scene!: THREE.Scene;
   private renderer!: THREE.WebGLRenderer;
@@ -75,6 +78,8 @@ export class ThreeScene {
     { nombre: "20_viseme", tiempo: 0.3,isOpenMouth: true, morphTarject:'Mouth_Open-O', porcentaje: 0.6, porcentajeMorph: 1 },
     { nombre: "21_viseme", tiempo: 0.3,isOpenMouth: true, morphTarject:'Tight-O', porcentaje: 0, porcentajeMorph: 0 },  
   ];
+
+  visemeFunctions!: VisemeFunction[];
 
   constructor(private window: Window) {
     this.clock = new THREE.Clock();
@@ -177,7 +182,6 @@ export class ThreeScene {
     controls.enableZoom = false;
     controls.target.set(0, 1.4, 0);
     controls.update();
-
    
   }
 
@@ -214,15 +218,26 @@ export class ThreeScene {
     }
 
     // Add custom animation A_mouth control
-    this.visemesCharacter.forEach(element => {
+
+    this.visemeFunctions = this.visemesCharacter.map((element, index) => {
+      return () => {
+        let weight: number = 1;
+        const openMouthAction = additiveActions['openMouth'].action;
+          this.setWeight_A(openMouthAction, weight, 1, element.morphTarject, element.isOpenMouth, element.porcentaje, element.porcentajeMorph);
+                
+      };
+    });
+
+    /* this.visemesCharacter.forEach(element => {
       panelSettings[element.nombre] = 0.0;
-      /* folder4.add(panelSettings, element.nombre, 0.0, 1.0, 0.01).listen().onChange((weight: number) => {
+      
+       folder4.add(panelSettings, element.nombre, 0.0, 1.0, 0.01).listen().onChange((weight: number) => {
           const openMouthAction = additiveActions['openMouth'].action;
           this.setWeight_A(openMouthAction, weight, 1, element.morphTarject, element.isOpenMouth, element.porcentaje, element.porcentajeMorph);
           panelSettings[element.nombre] = weight;
-      });  */
+      });  
       
-    });
+    }); */
   
    // Add morph targets control
   this.morphMeshes.forEach((mesh,index) => {

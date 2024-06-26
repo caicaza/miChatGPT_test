@@ -23,6 +23,11 @@ export class ThreejsComponent implements AfterViewInit {
     this.scene.init('three-js-container');
   }
 
+  activarVisema(numViseme: number): void {
+    this.scene.visemeFunctions[numViseme]();
+
+  }
+
 
 
 }
