@@ -25,6 +25,7 @@ import { RespuestaGeminiComponent } from './respuesta-gemini/respuesta-gemini.co
 import { ViewOpenAIComponent } from './view-open-ai/view-open-ai.component';
 import { ViewGeminiComponent } from './view-gemini/view-gemini.component';
 import { ThreejsComponent } from './threejs/threejs.component';
+import { Chat3dComponent } from './chat3d/chat3d.component';
 
 
 @NgModule({
@@ -43,7 +44,8 @@ import { ThreejsComponent } from './threejs/threejs.component';
     RespuestaGeminiComponent,
     ViewOpenAIComponent,
     ViewGeminiComponent,
-    ThreejsComponent
+    ThreejsComponent,
+    Chat3dComponent
   ],
   imports: [
     BrowserModule,
@@ -63,7 +65,8 @@ import { ThreejsComponent } from './threejs/threejs.component';
       { path: 'camaraGemini', component: CaptureCameraGeminiComponent },
       { path: 'openAI', component: ViewOpenAIComponent },
       { path: 'gemini', component: ViewGeminiComponent },    
-      { path: 'threejs', component: ThreejsComponent },     
+      { path: 'threejs', component: ThreejsComponent },  
+      { path: 'chat3D', component: Chat3dComponent },     
       
     ]),
 
