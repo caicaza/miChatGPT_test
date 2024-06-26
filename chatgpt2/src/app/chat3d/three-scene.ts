@@ -1,3 +1,4 @@
+import { Injectable, HostListener } from '@angular/core';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -44,6 +45,11 @@ interface Viseme {
 type VisemeFunction = () => void;
 
 
+@Injectable({
+  providedIn: 'root'
+})
+
+
 export class ThreeScene {
   private scene!: THREE.Scene;
   private renderer!: THREE.WebGLRenderer;
@@ -51,11 +57,11 @@ export class ThreeScene {
   private container: HTMLDivElement | null = null;
   private mixer!: THREE.AnimationMixer;
   private clock!: THREE.Clock;
-  private boneNames!: Set<string>;
 
   morphMeshes: any[] = [];   
   
   private visemesCharacter: Viseme[] = [
+    { nombre: "0_viseme", tiempo: 0.3,isOpenMouth: true, morphTarject:'Tight-O', porcentaje: 0, porcentajeMorph: 0 },  
     { nombre: "1_viseme", tiempo: 0.3,isOpenMouth: true, morphTarject:'Lip_Open', porcentaje: 0.3, porcentajeMorph: 1  },
     { nombre: "2_viseme", tiempo: 0.3,isOpenMouth: true, morphTarject:'Mouth_Lips_Open', porcentaje: 0.1, porcentajeMorph: 0.5 },
     { nombre: "3_viseme", tiempo: 0.3,isOpenMouth: true, morphTarject:'Mouth_Pucker_Open', porcentaje: 0.2, porcentajeMorph: 0.5 },
@@ -82,10 +88,8 @@ export class ThreeScene {
   visemeFunctions!: VisemeFunction[];
   weigthSettings: any={}; 
 
-
   constructor(private window: Window) {
     this.clock = new THREE.Clock();
-    this.boneNames = new Set<string>();
   }
 
   init(containerId: string) {
@@ -178,12 +182,6 @@ export class ThreeScene {
     this.camera = new THREE.PerspectiveCamera(70, width / height, 0.01, 100);
     this.camera.position.set(0, 1.5, 0.75);
     this.renderer.setSize(width, height);
-
-    const controls = new OrbitControls(this.camera, this.renderer.domElement);
-    controls.enablePan = false;
-    controls.enableZoom = false;
-    controls.target.set(0, 1.4, 0);
-    controls.update();
    
   }
 
@@ -213,11 +211,11 @@ export class ThreeScene {
     }
 
     // Add custom animation A_mouth control
-    this.visemeFunctions = this.visemesCharacter.map((element, index) => {
+    this.visemeFunctions = this.visemesCharacter.map((element) => {
       return () => {
         let weight: number = 1;
         const openMouthAction = additiveActions['openMouth'].action;
-          this.setWeight_A(openMouthAction, weight, 1, element.morphTarject, element.isOpenMouth, element.porcentaje, element.porcentajeMorph);                
+          this.setWeight_A(openMouthAction, weight, element.tiempo, element.morphTarject, element.isOpenMouth, element.porcentaje, element.porcentajeMorph);                
       };
     });
   
@@ -238,7 +236,6 @@ export class ThreeScene {
           for (const morphName in mesh.morphTargetDictionary) {
             //solo para animar parpados
             if (allowedMorphNames.includes(morphName) && morphName=='Eye_Blink') {
-              console.log(morphName);
               let morphName2=morphName+"_2";
               const index = mesh.morphTargetDictionary[morphName];
               if (index !== undefined) {
@@ -360,8 +357,7 @@ setWeight(action: THREE.AnimationAction | undefined, targetWeight: number, durat
           action.setEffectiveWeight(newWeight);
 
           if (progress < 1) {
-              requestAnimationFrame(updateWeight);
-              
+              requestAnimationFrame(updateWeight);              
           }
       };
 
@@ -446,7 +442,7 @@ setWeight_A(
                 prevMorphTarget.mesh.morphTargetInfluences[prevMorphTarget.index] = (0);
               }
               this.weigthSettings[this.prevMorph]=restarMorph ;
-              console.log( this.weigthSettings[this.prevMorph]);
+              //console.log( this.weigthSettings[this.prevMorph]);
             }
           }
         }        
@@ -462,15 +458,75 @@ setWeight_A(
   }
 }
 
-    private getMorphTarget(name: string) {
-        for (const mesh of this.morphMeshes) {
-            const index = mesh.morphTargetDictionary[name];
-            if (index !== undefined) {
-                return { mesh, index };
-            }
+setWeight_Eyes(targetWeight: number, duration: number = 0.3, decayDuration: number = 0.3) {
+  console.log('animar ojos');
+  const initialWeight = 0;
+  const deltaWeight = targetWeight - initialWeight;
+  const start = performance.now();
+
+  const updateWeight = () => {
+    const elapsed = performance.now() - start;
+    let progress = Math.min(elapsed / (duration * 1000), 1);
+    
+    if (progress >= 1) {
+      progress = 1; // Ensure progress is capped at 1 when target weight is reached
+    }
+
+    const newWeight = initialWeight + deltaWeight * progress;
+
+    // Synchronize morph targets
+    const eyesMorphTarget = this.getMorphTarget('Eye_Blink');
+    const eyes2MorphTarget = this.getMorphTarget('Eye_Blink_2');
+
+    if (eyesMorphTarget) {
+      eyesMorphTarget.mesh.morphTargetInfluences[eyesMorphTarget.index] = newWeight;
+    }
+    if (eyes2MorphTarget) {
+      eyes2MorphTarget.mesh.morphTargetInfluences[eyes2MorphTarget.index] = newWeight;
+    }
+
+    if (progress >= 1) {
+      // Start decay after reaching target weight
+      const decayStart = performance.now();
+
+      const decayWeight = newWeight;
+      const decayDelta = -decayWeight;
+      
+      const decayUpdate = () => {
+        const decayElapsed = performance.now() - decayStart;
+        const decayProgress = Math.min(decayElapsed / (decayDuration * 1000), 1);
+        const decayNewWeight = decayWeight + decayDelta * decayProgress;
+
+        if (eyesMorphTarget) {
+          eyesMorphTarget.mesh.morphTargetInfluences[eyesMorphTarget.index] = decayNewWeight;
         }
-        return null;
-    }    
+        if (eyes2MorphTarget) {
+          eyes2MorphTarget.mesh.morphTargetInfluences[eyes2MorphTarget.index] = decayNewWeight;
+        }
+
+        if (decayProgress < 1) {
+          requestAnimationFrame(decayUpdate);
+        }
+      };
+
+      decayUpdate();
+    } else {
+      requestAnimationFrame(updateWeight);
+    }
+  };
+
+  updateWeight();
+}
+
+private getMorphTarget(name: string) {
+  for (const mesh of this.morphMeshes) {
+      const index = mesh.morphTargetDictionary[name];
+      if (index !== undefined) {
+          return { mesh, index };
+      }
+  }
+  return null;
+}    
   
   getActionType(action: THREE.AnimationAction): 'base' | 'additive' {
     const clip = action.getClip();
@@ -483,10 +539,20 @@ setWeight_A(
     }
   }
 
-  private onWindowResize() {
-    this.camera.aspect = window.innerWidth / window.innerHeight;
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    console.log(this.container);
+    if (this.container) {
+      const width = this.container.clientWidth;
+      const height = this.container.clientHeight;
+
+      console.log(width + " "+ height);
+
+      this.camera.aspect = width / height;
+      this.camera.updateProjectionMatrix();
+
+      this.renderer.setSize(width, height);
+    }
   }
 
   private animate() {
@@ -497,9 +563,14 @@ setWeight_A(
       settings.weight = action.getEffectiveWeight();
     }
 
+   
     const mixerUpdateDelta = this.clock.getDelta();
     this.mixer.update(mixerUpdateDelta);
     this.renderer.render(this.scene, this.camera);
+
+     // Configurar animación de parpadeo de ojos cada 10 segundos
+     
+     
   }
 }
 

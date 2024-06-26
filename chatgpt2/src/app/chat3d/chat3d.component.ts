@@ -45,22 +45,13 @@ export class Chat3dComponent implements OnInit, AfterViewInit {
 
   //Para la animacion Avatar
   @ViewChild('canvas', { static: true }) canvas!: ElementRef<HTMLCanvasElement>;
-  private ctx!: CanvasRenderingContext2D;
   private images: { [key: string]: HTMLImageElement } = {};
   private visemes: Viseme[] = [];
   textInput: string = '';
 
-  private additionalImages: { [key: string]: HTMLImageElement } = {};
-  private currentAdditionalImage: HTMLImageElement | undefined;
-
  // Escuchar el evento de redimensionar la ventana
- @HostListener('window:resize', ['$event'])
- onResize(event: Event) {
-   this.resizeCanvas();
- }
 
-  private scene: ThreeScene;
- 
+  private scene: ThreeScene; 
   constructor(private openaiService: OpenaiService, public voiceService: VoiceRecognitionService, @Inject(Window) private window: Window) { 
     this.scene = new ThreeScene(this.window);
 
@@ -85,8 +76,12 @@ export class Chat3dComponent implements OnInit, AfterViewInit {
     });
   }
 
-  ngAfterViewInit(): void {
-    this.scene.init('three-js-container');
+  async ngAfterViewInit(): Promise<void> {
+    await this.scene.init('three-js-container');
+    setInterval(() => {
+      this.scene.setWeight_Eyes(1);
+    }, 3500); 
+
 
     //this.resizeCanvas();
     //this.setupCanvas();
@@ -122,10 +117,8 @@ export class Chat3dComponent implements OnInit, AfterViewInit {
 
   addBotMessage(message: string) {
     this.messages.push({ text: message, sender: 'bot' });
-    console.log(message);
-        
+    console.log(message);        
   }
-
 
   async playAudio() {
     const audio = new Audio();
@@ -305,116 +298,30 @@ export class Chat3dComponent implements OnInit, AfterViewInit {
   }
 
   private startAnimation() {
-    let visemeIndex = 0;
-  
+    let visemeIndex = 0;  
     this.openaiService.playAudioBot();
-    
+  
     const update = () => {
       const audio = this.openaiService.getAudioBot();
       const currentTime = audio ? audio.currentTime * 1000 : 0; // Convert to ms
-       
-      if (visemeIndex < this.visemes.length && currentTime >= this.visemes[visemeIndex].audioOffset) {
-        const visemeId = this.visemes[visemeIndex].visemeId;
-        if (this.scene.visemeFunctions[visemeId]) {
-          this.scene.visemeFunctions[visemeId](); // Actualizar el visema en el modelo 3D
-        } else {
-          console.warn(`Viseme function for viseme ID ${visemeId} not found.`);
-        }
+  
+      while (visemeIndex < this.visemes.length && currentTime >= this.visemes[visemeIndex].audioOffset) {
+        const viseme = this.visemes[visemeIndex];
+        const visemeId = viseme.visemeId; 
+        // Call the viseme function with the interpolation factor
+        this.scene.visemeFunctions[visemeId]();
+  
         visemeIndex++;
       }
-      requestAnimationFrame(update);         
+      requestAnimationFrame(update);
     };
   
     update();
   }
 
-  private drawViseme(visemeId: string) {
-    const img = this.images[visemeId];
-    //console.log(this.images[visemeId]);
-    if (img) {
-      this.ctx.clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
-      this.ctx.drawImage(img, 0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
-    } else {
-      console.warn(`Image for viseme ID ${visemeId} not found.`);
-    }
+  ojos(){
+    this.scene.setWeight_Eyes(1);
   }
 
-  //Ojos avatar
-
-  private startAdditionalImageSequence() {
-    // Cargar las imágenes adicionales
-    const img0 = new Image();
-    img0.src = 'assets/0ojo.jpg';
-    const img1 = new Image();
-    img1.src = 'assets/1ojo.jpg';
-    const img2 = new Image();
-    img2.src = 'assets/2ojo.jpg';
-
-    img0.onload = () => {
-        img1.onload = () => {
-            img2.onload = () => {
-                this.additionalImages['0ojo'] = img0;
-                this.additionalImages['1ojo'] = img1;
-                this.additionalImages['2ojo'] = img2;
-
-                // Iniciar la secuencia
-                setInterval(() => {
-                    this.currentAdditionalImage = this.additionalImages['0ojo'];
-                    this.drawAdditionalImage();
-
-                    setTimeout(() => {
-                        this.currentAdditionalImage = this.additionalImages['1ojo'];
-                        this.drawAdditionalImage();
-
-                        setTimeout(() => {
-                            this.currentAdditionalImage = this.additionalImages['2ojo'];
-                            this.drawAdditionalImage();
-
-                            setTimeout(() => {
-                                this.currentAdditionalImage = undefined;
-                                this.drawAdditionalImage();
-                            }, 100);
-                        }, 400);
-                    }, 100);
-                }, 4000); // Repetir cada 5 segundos
-            };
-        };
-    };
-}
-
-
-  private drawAdditionalImage() {
-    // Redibujar el viseme actual
-    
-    
-    if (this.currentAdditionalImage) {
-      const miWidth = this.canvas.nativeElement.width;
-      const miHeight = miWidth*0.372;
-
-      // Dibujar la imagen adicional superpuesta
-      this.ctx.drawImage(this.currentAdditionalImage, 0, 0, miWidth, miHeight); // Ajustar las coordenadas y tamaño según sea necesario
-    } 
-  }
-
-  //Controlar tamaño canvas avatar
-
-  // Ajustar el tamaño del canvas después de la inicialización de la vista
- 
-
-  // Método para ajustar el tamaño del canvas
-  private resizeCanvas() {
-    const canvas = document.getElementById('responsiveCanvas') as HTMLCanvasElement;
-    const container = canvas.parentElement as HTMLElement;
-    if (container) {
-      const width = container.clientWidth;
-      const height = width * 4 / 3; // Mantener la proporción 4:3
-      canvas.width = width;
-      canvas.height = height;
-      this.drawViseme('0');
-    }
-  }
-
-  //Para el boton audio
-  
 
 }

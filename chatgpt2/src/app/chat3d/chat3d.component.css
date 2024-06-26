@@ -132,8 +132,8 @@
   }
 
   #three-js-container {
-    width: 100%;
-    height: 100%; /* Puedes ajustar esta altura según tus necesidades */
+    width: 100% !important;
+    height: 100% !important; /* Puedes ajustar esta altura según tus necesidades */
   }
   
   
