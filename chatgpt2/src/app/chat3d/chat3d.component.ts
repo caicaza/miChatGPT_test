@@ -280,26 +280,13 @@ export class Chat3dComponent implements OnInit, AfterViewInit {
     this.animationFrameId = requestAnimationFrame(() => this.draw());
   }
 
-  //Para la animarcion avatar
-  private loadImages(): Promise<void> {
-    const visemeIds = Array.from({ length: 22 }, (_, i) => i.toString()); // Visemes from 0 to 21
-    const promises = visemeIds.map(id => {
-      return new Promise<void>((resolve) => {
-        const img = new Image();
-        img.src = `assets/${id}.jpg`;
-        img.onload = () => {
-          this.images[id] = img;
-          resolve();
-        };
-      });
-    });
-
-    return Promise.all(promises).then(() => { });
-  }
-
   private startAnimation() {
     let visemeIndex = 0;  
     this.openaiService.playAudioBot();
+
+    setTimeout(()=>{
+      this.animationArms();
+    },1200);
   
     const update = () => {
       const audio = this.openaiService.getAudioBot();
@@ -321,6 +308,26 @@ export class Chat3dComponent implements OnInit, AfterViewInit {
 
   ojos(){
     this.scene.setWeight_Eyes(1);
+  }
+  arms(index:number){
+    this.scene.armMovements[index]();
+  }
+
+  animationArms(){
+    const valores = [ 0, 1, 2, null];
+    const indiceAleatorio = Math.floor(Math.random() * valores.length);
+    const index=valores[indiceAleatorio];
+    
+    if (index != null) {
+      console.log(index);
+      this.scene.armMovements[index]();
+    }
+
+  }
+  animationArms2(){
+    this.scene.armMovements[0]();
+
+
   }
 
 

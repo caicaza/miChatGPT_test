@@ -4,11 +4,19 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 type BaseAction = 'Idle';
-type AdditiveAction = 'openMouth';
+type AdditiveAction = 'openMouth' | 'arms_move1' | 'arms_move2' | 'arms_move3' ;
 
 interface ActionSettings {
   weight: number;
   action?: THREE.AnimationAction;
+}
+
+interface personaje {
+  id: number;
+  glb: string;
+  camPY: number;
+  camTargectY: number;
+
 }
 
 const baseActions: Record<BaseAction, ActionSettings> = {
@@ -16,7 +24,10 @@ const baseActions: Record<BaseAction, ActionSettings> = {
 };
 
 const additiveActions: Record<AdditiveAction, ActionSettings> = {
-  openMouth: { weight: 0 }
+  openMouth: { weight: 0 },
+  arms_move2: { weight: 0 },
+  arms_move1: { weight: 0 },
+  arms_move3: { weight: 0 },
 };
 
 const crossFadeControls: any[] = [];
@@ -43,6 +54,7 @@ interface Viseme {
 }
 
 type VisemeFunction = () => void;
+type ArmsFunction = () => void;
 
 
 @Injectable({
@@ -88,12 +100,30 @@ export class ThreeScene {
   visemeFunctions!: VisemeFunction[];
   weigthSettings: any={}; 
 
+  armMovements: ArmsFunction[]=[];
+
+  personajes:personaje[]=[{
+    id: 1,
+    glb: 'assets/models/Chica_sim3.glb',
+    camPY: 1.5,
+    camTargectY: 1.35,
+  },
+  {
+    id: 2,
+    glb: 'assets/models/Chico_sim2.glb',
+    camPY: 1.65,
+    camTargectY: 1.55,
+  }
+
+  ];
+
   constructor(private window: Window) {
     this.clock = new THREE.Clock();
   }
 
   init(containerId: string) {
     this.container = this.window.document.getElementById(containerId) as HTMLDivElement;
+    const personajeElejido = this.personajes[1];
     this.scene = new THREE.Scene();
     //this.scene.background = new THREE.Color(0xa0a0a0);
     //this.scene.fog = new THREE.Fog(0xa0a0a0, 10, 50);
@@ -114,7 +144,7 @@ export class ThreeScene {
     this.scene.add(dirLight);
 
     const loader = new GLTFLoader();
-    loader.load('assets/models/Chica_sim1.glb', (gltf) => {
+    loader.load(personajeElejido.glb, (gltf) => {
       //Cargar escena
       const model = gltf.scene;
       this.scene.add(model);
@@ -127,7 +157,7 @@ export class ThreeScene {
       this.mixer = new THREE.AnimationMixer(model);
       const numAnimations = animations.length;
 
-      //Animaciones  de los huesos
+      //Animaciones  de lol cuerpo
 
       for (let i = 0; i < numAnimations; ++i) {
         let clip = animations[i];
@@ -140,6 +170,7 @@ export class ThreeScene {
           allActions.push(action);
         } else if (name in additiveActions) {
           THREE.AnimationUtils.makeClipAdditive(clip);
+          //clip = THREE.AnimationUtils.subclip( clip, clip.name, 2, 30, 30 );
           
           const action = this.mixer.clipAction(clip);
           this.activateAction(action);
@@ -180,8 +211,16 @@ export class ThreeScene {
     const height = this.container.clientHeight;
 
     this.camera = new THREE.PerspectiveCamera(70, width / height, 0.01, 100);
-    this.camera.position.set(0, 1.5, 0.75);
+    this.camera.position.set(-0.2, personajeElejido.camPY, 0.7);
     this.renderer.setSize(width, height);
+
+    const controls = new OrbitControls(this.camera, this.renderer.domElement);
+    controls.enablePan = false;
+    controls.enableZoom = false;
+    controls.enabled = false;
+
+    controls.target.set(0, personajeElejido.camTargectY, 0);
+    controls.update();
    
   }
 
@@ -207,7 +246,14 @@ export class ThreeScene {
 
     for (const name of Object.keys(additiveActions) as AdditiveAction[]) {
       const settings = additiveActions[name];
-      panelSettings[name] = settings.weight;      
+      panelSettings[name] = settings.weight;
+      if (name != 'openMouth') {
+        //Movimientos de brazos
+        this.armMovements.push(() => {        
+          const armAction = additiveActions[name].action;
+          this.setWeight_Arms(armAction,1);                           
+        });        
+      }      
     }
 
     // Add custom animation A_mouth control
@@ -369,6 +415,48 @@ setWeight(action: THREE.AnimationAction | undefined, targetWeight: number, durat
   }
 }
 
+setWeight_Arms(action: THREE.AnimationAction | undefined, targetWeight: number, duration: number = 1, reverseDuration: number = 0.7) {
+  if (!action) return;
+
+ const initialWeight = action.getEffectiveWeight();
+  const deltaWeight = targetWeight - initialWeight;
+  const start = performance.now();
+
+  const updateWeight = () => {
+    const elapsed = performance.now() - start;
+    const progress = Math.min(elapsed / (duration * 1000), 1);
+    const newWeight = initialWeight + deltaWeight * progress;
+    action.setEffectiveWeight(newWeight);
+
+    if (progress < 1) {
+      requestAnimationFrame(updateWeight);
+    } else {
+      // Start reducing the weight back to zero after reaching the target weight
+      
+
+      setTimeout(()=>{
+        const reverseStart = performance.now();
+
+        const reverseWeight = () => {
+          const reverseElapsed = performance.now() - reverseStart;
+          const reverseProgress = Math.min(reverseElapsed / (reverseDuration * 1000), 1);
+          const revWeight = targetWeight - targetWeight * reverseProgress;
+          action.setEffectiveWeight(revWeight);
+
+          if (reverseProgress < 1) {
+            requestAnimationFrame(reverseWeight);
+          }
+        };
+        requestAnimationFrame(reverseWeight);
+        
+      },500);
+      
+    }
+  }; 
+
+  updateWeight(); 
+
+}
 private prevMorph: string | null = null;
 
 
@@ -459,7 +547,6 @@ setWeight_A(
 }
 
 setWeight_Eyes(targetWeight: number, duration: number = 0.3, decayDuration: number = 0.3) {
-  console.log('animar ojos');
   const initialWeight = 0;
   const deltaWeight = targetWeight - initialWeight;
   const start = performance.now();
