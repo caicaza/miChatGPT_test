@@ -712,47 +712,86 @@ setWeight_Eyes(targetWeight: number, duration: number = 0.3, decayDuration: numb
 
   updateWeight();
 }
-//Movimiento facial
-applyWeights() {
-  let actions: ActionWeight[] = this.expresionesFaciales[3].actions;
-  actions.forEach(({name, targetWeight, duration = 1, index }) => {
-    this.setWeight_Morphs( name, targetWeight, duration, index );
+
+prevActionsIndex=0;
+applyWeights(index: number) {
+  // Detectar cambio en las expresiones faciales
+  if (index !== this.prevActionsIndex) {
+    // Reducir pesos de los morph targets a 0
+    const previousActions = this.expresionesFaciales[this.prevActionsIndex].actions;
+    previousActions.forEach(({ name, index }) => {
+      this.reduceWeightToZero(name, index, 0.2); // Duración de 0.2 segundos para reducir a 0
+    });
+  }
+
+  // Aplicar nuevos pesos de los morph targets
+  let actions: ActionWeight[] = this.expresionesFaciales[index].actions;
+  actions.forEach(({ name, targetWeight, duration = 1, index }) => {
+    this.setWeight_Morphs(name, targetWeight, duration, index);
   });
+
+  // Actualizar el índice previo
+  this.prevActionsIndex = index;
 }
 
-setWeight_Morphs(morphName:string, targetWeight: number, duration: number = 0.3, index:number) {
-  const initialWeight = 0;
+reduceWeightToZero(morphName: string, index: number, duration: number = 0.2) {
+  const initialWeight = this.getMorphWeight(morphName, index);
+  const deltaWeight = -initialWeight;
+  const start = performance.now();
+
+  const updateWeight = () => {
+    const elapsed = performance.now() - start;
+    const progress = Math.min(elapsed / (duration * 1000), 1);
+    const newWeight = initialWeight + deltaWeight * progress;
+    let MorphTarget;
+
+    // Sincronizar los morph targets
+    MorphTarget = this.getMorphTarget(morphName, index);
+
+    if (MorphTarget) {
+      MorphTarget.mesh.morphTargetInfluences[MorphTarget.index] = newWeight;
+    }
+
+    if (progress < 1) {
+      requestAnimationFrame(updateWeight);
+    }
+  };
+
+  updateWeight();
+}
+
+setWeight_Morphs(morphName: string, targetWeight: number, duration: number = 0.3, index: number) {
+  const initialWeight = this.getMorphWeight(morphName, index);
   const deltaWeight = targetWeight - initialWeight;
   const start = performance.now();
 
   const updateWeight = () => {
     const elapsed = performance.now() - start;
-    let progress = Math.min(elapsed / (duration * 1000), 1);
-    
-    if (progress >= 1) {
-      progress = 1; // Ensure progress is capped at 1 when target weight is reached
-    }
-
+    const progress = Math.min(elapsed / (duration * 1000), 1);
     const newWeight = initialWeight + deltaWeight * progress;
     let MorphTarget;
 
-    // Synchronize morph targets
-   
-    MorphTarget = this.getMorphTarget(morphName,index);  
-    
+    // Sincronizar los morph targets
+    MorphTarget = this.getMorphTarget(morphName, index);
 
     if (MorphTarget) {
       MorphTarget.mesh.morphTargetInfluences[MorphTarget.index] = newWeight;
     }
-    
+
     if (progress < 1) {
       requestAnimationFrame(updateWeight);
-    } 
-
-    
+    }
   };
 
   updateWeight();
+}
+
+getMorphWeight(morphName: string, index: number): number {
+  const MorphTarget = this.getMorphTarget(morphName, index);
+  if (MorphTarget) {
+    return MorphTarget.mesh.morphTargetInfluences[MorphTarget.index];
+  }
+  return 0;
 }
 
 /* private getMorphTarget(name: string) {
