@@ -19,6 +19,18 @@ interface personaje {
 
 }
 
+interface ActionWeight {
+  name: string;
+  targetWeight: number;
+  index: number;
+  duration?: number;
+}
+
+interface facialAction {
+  name: string;
+  actions: ActionWeight[];
+}
+
 const baseActions: Record<BaseAction, ActionSettings> = {
   Idle: { weight: 1 }
 };
@@ -41,8 +53,13 @@ interface AnimationMixerEvent extends THREE.Event {
 const allowedMorphNames = [
   'Lip_Open', 'Mouth_Widen', 'Mouth_Plosive', 'Mouth_Lips_Part', 
   'Dental_Lip', 'Mouth_Lips_Open', 'Mouth_Pucker_Open', 'Mouth_Open', 
-  'Eye_Blink', 'Tight-O'
+  'Eye_Blink', 'Tight-O', 
+  'A38_Mouth_Smile_Left', 'A39_Mouth_Smile_Right', 'Mouth_Dimple_R', 'A45_Mouth_Upper_Up_Right', 'A32_Mouth_Right', 'A01_Brow_Inner_Up', 'A04_Brow_Outer_Up_Left', 'A05_Brow_Outer_Up_Right', 'A24_Nose_Sneer_Right' , 'A40_Mouth_Frown_Left', 'A41_Mouth_Frown_Right',
+  'A02_Brow_Down_Left', 'A03_Brow_Down_Right', 'Nose_Scrunch', 'Eye_Squint_R', 'Eye_Squint_L'
 ];
+
+const alowedLash = [ 'A01_Brow_Inner_Up', 'A04_Brow_Outer_Up_Left', 'A05_Brow_Outer_Up_Right', 'A24_Nose_Sneer_Right', 
+  'A02_Brow_Down_Left', 'A03_Brow_Down_Right', 'Nose_Scrunch'  ];
 
 interface Viseme {
   nombre: string;
@@ -104,18 +121,59 @@ export class ThreeScene {
 
   personajes:personaje[]=[{
     id: 1,
-    glb: 'assets/models/Chica_sim3.glb',
+    glb: 'assets/models/Chica_sim4.glb',
     camPY: 1.5,
     camTargectY: 1.35,
   },
   {
     id: 2,
-    glb: 'assets/models/Chico_sim2.glb',
+    glb: 'assets/models/Chico_sim3.glb',
     camPY: 1.65,
     camTargectY: 1.55,
   }
 
   ];
+  expresionesFaciales: facialAction[]=[
+    {name: 'alegre',
+      actions: [
+      {name: 'A38_Mouth_Smile_Left', targetWeight: 0.3, index: 0},
+      {name: 'A39_Mouth_Smile_Right', targetWeight: 0.3, index: 0},
+    ]
+    },
+    {name: 'triste',
+      actions: [
+      {name: 'A40_Mouth_Frown_Left', targetWeight: 0.6, index: 0},
+      {name: 'A41_Mouth_Frown_Right', targetWeight: 0.6, index: 0},
+      {name: 'A01_Brow_Inner_Up', targetWeight: 1, index: 0},
+      {name: 'A01_Brow_Inner_Up_3', targetWeight: 1, index: 2},
+    ]
+    },
+    {name: 'disgusto',
+      actions: [
+      {name: 'A45_Mouth_Upper_Up_Right', targetWeight: 0.4, index: 0},
+      {name: 'A24_Nose_Sneer_Right', targetWeight: 1, index: 0},
+      {name: 'A24_Nose_Sneer_Right_3', targetWeight: 1, index: 2},
+      
+    ]
+    },
+    {name: 'ira',
+      actions: [
+      {name: 'A02_Brow_Down_Left', targetWeight: 0.6, index: 0},
+      {name: 'A03_Brow_Down_Right', targetWeight: 0.4, index: 0},
+      {name: 'A02_Brow_Down_Left_3', targetWeight: 0.6, index: 2},
+      {name: 'A03_Brow_Down_Right_3', targetWeight: 0.4, index: 2},
+      {name: 'Nose_Scrunch', targetWeight: 1, index: 0},
+      {name: 'Nose_Scrunch_3', targetWeight: 1, index: 2},
+      {name: 'A24_Nose_Sneer_Right', targetWeight: 0.7, index: 0},
+      {name: 'A24_Nose_Sneer_Right_3', targetWeight: 0.7, index: 2},
+      {name: 'Eye_Squint_R', targetWeight: 0.6, index: 0},
+      {name: 'Eye_Squint_L', targetWeight: 0.6, index: 0},  
+      {name: 'A45_Mouth_Upper_Up_Right', targetWeight: 0.6, index: 0},
+             
+    ]
+    },
+  ];
+
 
   constructor(private window: Window) {
     this.clock = new THREE.Clock();
@@ -123,7 +181,7 @@ export class ThreeScene {
 
   init(containerId: string) {
     this.container = this.window.document.getElementById(containerId) as HTMLDivElement;
-    const personajeElejido = this.personajes[1];
+    const personajeElejido = this.personajes[0];
     this.scene = new THREE.Scene();
     //this.scene.background = new THREE.Color(0xa0a0a0);
     //this.scene.fog = new THREE.Fog(0xa0a0a0, 10, 50);
@@ -191,10 +249,21 @@ export class ThreeScene {
           if (object.name == "CC_Base_Body_6") {
             //console.log(object);
             this.morphMeshes.push(object);
+          }
+          if (object.name == "Male_Bushy") {
+            //parpado para el hombre
+            //console.log(object);
+            this.morphMeshes.push(object);
+          }
+          if (object.name == "Female_Angled" ) {
+            //parpados para la mujer
+            //console.log(object);
+            this.morphMeshes.push(object);
 
           }
         }               
-    });        
+    });    
+    
       this.createPanel();
       this.renderer.setAnimationLoop(this.animate.bind(this));
       
@@ -273,6 +342,8 @@ export class ThreeScene {
             if (allowedMorphNames.includes(morphName)) {
               const index = mesh.morphTargetDictionary[morphName];
               if (index !== undefined) {
+                console.log(morphName);
+
                 panelSettings[morphName] = mesh.morphTargetInfluences[index];               
               }
             }
@@ -283,13 +354,46 @@ export class ThreeScene {
             //solo para animar parpados
             if (allowedMorphNames.includes(morphName) && morphName=='Eye_Blink') {
               let morphName2=morphName+"_2";
+              console.log(morphName2);
+
               const index = mesh.morphTargetDictionary[morphName];
               if (index !== undefined) {
                 panelSettings[morphName2] = mesh.morphTargetInfluences[index];
               }
             }
           }         
-          break;      
+          break;
+        case 2:
+          for (const morphName in mesh.morphTargetDictionary) {
+            //solo para animar pestañas
+            if (alowedLash.includes(morphName)) {
+              
+              let morphName2=morphName+"_3";
+              console.log(morphName2);
+
+              const index = mesh.morphTargetDictionary[morphName];
+              if (index !== undefined) {
+                panelSettings[morphName2] = mesh.morphTargetInfluences[index];
+              }
+            }
+          }   
+          break;
+          case 3:
+            for (const morphName in mesh.morphTargetDictionary) {
+              //solo para animar pestañas
+              if (alowedLash.includes(morphName)) {
+                
+                let morphName2=morphName+"_4";
+                console.log(morphName2);
+  
+                const index = mesh.morphTargetDictionary[morphName];
+                if (index !== undefined) {
+                  panelSettings[morphName2] = mesh.morphTargetInfluences[index];
+                }
+              }
+            }   
+            break;    
+
         default:
           break;
       }
@@ -384,6 +488,10 @@ export class ThreeScene {
       if (startAction) startAction.fadeOut(duration);
     }
   }
+
+
+
+
 //Animación de los pesos
 
 setWeight(action: THREE.AnimationAction | undefined, targetWeight: number, duration: number = 2) {
@@ -563,7 +671,7 @@ setWeight_Eyes(targetWeight: number, duration: number = 0.3, decayDuration: numb
 
     // Synchronize morph targets
     const eyesMorphTarget = this.getMorphTarget('Eye_Blink');
-    const eyes2MorphTarget = this.getMorphTarget('Eye_Blink_2');
+    const eyes2MorphTarget = this.getMorphTarget('Eye_Blink_2',1);
 
     if (eyesMorphTarget) {
       eyesMorphTarget.mesh.morphTargetInfluences[eyesMorphTarget.index] = newWeight;
@@ -604,8 +712,50 @@ setWeight_Eyes(targetWeight: number, duration: number = 0.3, decayDuration: numb
 
   updateWeight();
 }
+//Movimiento facial
+applyWeights() {
+  let actions: ActionWeight[] = this.expresionesFaciales[3].actions;
+  actions.forEach(({name, targetWeight, duration = 1, index }) => {
+    this.setWeight_Morphs( name, targetWeight, duration, index );
+  });
+}
 
-private getMorphTarget(name: string) {
+setWeight_Morphs(morphName:string, targetWeight: number, duration: number = 0.3, index:number) {
+  const initialWeight = 0;
+  const deltaWeight = targetWeight - initialWeight;
+  const start = performance.now();
+
+  const updateWeight = () => {
+    const elapsed = performance.now() - start;
+    let progress = Math.min(elapsed / (duration * 1000), 1);
+    
+    if (progress >= 1) {
+      progress = 1; // Ensure progress is capped at 1 when target weight is reached
+    }
+
+    const newWeight = initialWeight + deltaWeight * progress;
+    let MorphTarget;
+
+    // Synchronize morph targets
+   
+    MorphTarget = this.getMorphTarget(morphName,index);  
+    
+
+    if (MorphTarget) {
+      MorphTarget.mesh.morphTargetInfluences[MorphTarget.index] = newWeight;
+    }
+    
+    if (progress < 1) {
+      requestAnimationFrame(updateWeight);
+    } 
+
+    
+  };
+
+  updateWeight();
+}
+
+/* private getMorphTarget(name: string) {
   for (const mesh of this.morphMeshes) {
       const index = mesh.morphTargetDictionary[name];
       if (index !== undefined) {
@@ -613,7 +763,27 @@ private getMorphTarget(name: string) {
       }
   }
   return null;
-}    
+}   */  
+
+  private getMorphTarget(name: string, index: number = 0) {
+    if (index>0) {
+      name=this.removeSuffixes(name);
+    }
+    if (index < this.morphMeshes.length) {
+      const mesh = this.morphMeshes[index];
+      const morphIndex = mesh.morphTargetDictionary[name];
+      if (morphIndex !== undefined) {
+        return { mesh, index: morphIndex };
+      }
+    }
+    return null;
+  }
+
+  removeSuffixes(morphName: string): string {
+    const suffixPattern = /_(2|3|4)$/;
+    return morphName.replace(suffixPattern, '');
+  }
+  
   
   getActionType(action: THREE.AnimationAction): 'base' | 'additive' {
     const clip = action.getClip();
@@ -625,6 +795,8 @@ private getMorphTarget(name: string) {
       return 'base'; // Manejar casos no esperados como base por defecto
     }
   }
+
+  
 
   @HostListener('window:resize', ['$event'])
   onResize() {

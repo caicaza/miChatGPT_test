@@ -326,8 +326,10 @@ export class Chat3dComponent implements OnInit, AfterViewInit {
   }
   animationArms2(){
     this.scene.armMovements[0]();
+  }
 
-
+  animateMorph(){
+    this.scene.applyWeights();
   }
 
 
