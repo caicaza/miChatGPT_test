@@ -26,6 +26,7 @@ import { ViewOpenAIComponent } from './view-open-ai/view-open-ai.component';
 import { ViewGeminiComponent } from './view-gemini/view-gemini.component';
 import { ThreejsComponent } from './threejs/threejs.component';
 import { Chat3dComponent } from './chat3d/chat3d.component';
+import { WebSocketService } from './services/web-socket.service';
 
 
 @NgModule({
@@ -72,7 +73,7 @@ import { Chat3dComponent } from './chat3d/chat3d.component';
 
   ],
   
-  providers: [VoiceRecognitionService],
+  providers: [VoiceRecognitionService, WebSocketService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

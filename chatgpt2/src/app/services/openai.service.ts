@@ -1,10 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { User } from '../model/user';
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class OpenaiService {
+  //private socket: SocketIOClient.Socket; // Instancia del cliente Socket.IO
+
   private apiUrl = 'http://localhost:3000/chat'; // Asegúrate de que esta URL coincide con la ruta de tu servidor
   private uploadUrl = 'http://localhost:3000/upload';
   private speechUrl = 'http://localhost:3000/audio'; // URL para generar audio
@@ -20,7 +24,7 @@ export class OpenaiService {
   constructor(private http: HttpClient) { }
 
   // Método para obtener la respuesta del chat
-  async getChatResponse(prompt: string): Promise<{ text: string; audioUrl?: string; viseme: { audioOffset: number, visemeId: number }[] }> {
+  async getChatResponse(user: User, prompt: string): Promise<{ text: string; audioUrl?: string; viseme: { audioOffset: number, visemeId: number }[] }> {
     try {
       const response = await this.http.post<{ text: string; audioUrl?: string; viseme: { audioOffset: number, visemeId: number }[] }>(this.apiUrl, { prompt }).toPromise();
       if (response) {

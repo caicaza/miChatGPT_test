@@ -2,6 +2,8 @@ import { AfterViewInit, Component, ElementRef, OnInit, ViewChild, HostListener, 
 import { OpenaiService } from '../services/openai.service';
 import { VoiceRecognitionService } from '../services/voice-recognition.service';
 import { ThreeScene } from './three-scene'; // Importa la clase ThreeScene desde el archivo separado
+import { User } from '../model/user';
+
 
 
 interface Viseme {
@@ -17,6 +19,9 @@ interface Viseme {
 ]
 })
 export class Chat3dComponent implements OnInit, AfterViewInit {
+
+  user: User = { id: '1234' };
+
   messages: { text: string; sender: string; }[] = [];
   userInput: string = '';
   mensajeInicial="Hola, ¿en qué puedo ayudarte?";
@@ -94,7 +99,7 @@ export class Chat3dComponent implements OnInit, AfterViewInit {
 
     this.addUserMessage(this.userInput);
     try {
-      const botResponse = await this.openaiService.getChatResponse(this.userInput);
+      const botResponse = await this.openaiService.getChatResponse(this.user,this.userInput);
       this.addBotMessage(botResponse.text);
       this.audioUrl = await this.openaiService.getSpeechAudio();
       

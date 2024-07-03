@@ -2,6 +2,7 @@
 
 import { Component, OnInit } from '@angular/core';
 import { OpenaiService } from '../services/openai.service';
+import { User } from '../model/user';
 
 @Component({
   selector: 'app-chat',
@@ -11,6 +12,7 @@ import { OpenaiService } from '../services/openai.service';
 export class ChatComponent implements OnInit {
   messages: { text: string; sender: string; }[] = [];
   userInput: string = '';
+  user: User = { id: '1234' };
 
   constructor(private openaiService: OpenaiService) { }
 
@@ -25,7 +27,7 @@ export class ChatComponent implements OnInit {
 
     this.addUserMessage(this.userInput);
     try {
-      const botResponse = await this.openaiService.getChatResponse(this.userInput);
+      const botResponse = await this.openaiService.getChatResponse(this.user, this.userInput);
      // this.addBotMessage(botResponse);
     } catch (error) {
       console.error('Error in sendMessage:', error);

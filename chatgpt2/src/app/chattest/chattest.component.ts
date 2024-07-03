@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild, HostListener } from '@angular/core';
 import { OpenaiService } from '../services/openai.service';
 import { VoiceRecognitionService } from '../services/voice-recognition.service';
+import { User } from '../model/user';
 
 interface Viseme {
   audioOffset: number;
@@ -13,6 +14,8 @@ interface Viseme {
   styleUrls: ['./chattest.component.css']
 })
 export class ChattestComponent implements OnInit, AfterViewInit {
+  user: User = { id: '1234' };
+
   messages: { text: string; sender: string; }[] = [];
   userInput: string = '';
   mensajeInicial="Hola, ¿en qué puedo ayudarte?";
@@ -94,7 +97,7 @@ export class ChattestComponent implements OnInit, AfterViewInit {
 
     this.addUserMessage(this.userInput);
     try {
-      const botResponse = await this.openaiService.getChatResponse(this.userInput);
+      const botResponse = await this.openaiService.getChatResponse(this.user, this.userInput);
       this.addBotMessage(botResponse.text);
       this.audioUrl = await this.openaiService.getSpeechAudio();
       
