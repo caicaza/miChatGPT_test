@@ -1,0 +1,7 @@
+<div *ngIf="currentComponent === 1">
+    <app-instrucciones (changeComponent)="changeComponent($event)" ></app-instrucciones>
+</div>
+{{currentComponent}}
+<div *ngIf="currentComponent === 2">
+    <app-chat3d></app-chat3d>
+</div>

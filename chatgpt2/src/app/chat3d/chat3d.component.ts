@@ -28,10 +28,11 @@ export class Chat3dComponent implements OnInit, AfterViewInit {
   //Archivo y audio
   selectedFile: File | null = null;
   audioUrl: string | null = null;
-  //Chat
-
-  //Reconocimiento de voz
-  //isListening: boolean = false;
+  //Temporizador
+  minutes: number = 2;
+  seconds: number = 0;
+  private timerInterval: any;
+  private timerTimeout: any;
 
   @ViewChild('visualizerCanvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
 
@@ -61,7 +62,6 @@ export class Chat3dComponent implements OnInit, AfterViewInit {
   }
 
   async ngOnInit(): Promise<void> {   
-
     //bot
     this.addBotMessage(this.mensajeInicial);
     //voice recognition
@@ -75,6 +75,7 @@ export class Chat3dComponent implements OnInit, AfterViewInit {
     });
     //Socket
     this.socketService.joinRoom(this.user.id);
+    //Temporizador   
 
   }
 
@@ -83,7 +84,13 @@ export class Chat3dComponent implements OnInit, AfterViewInit {
     setInterval(() => {
       this.scene.setWeight_Eyes(1);
     }, 3500); 
-
+    //Emocion de alegria
+    setTimeout(() => {
+      this.animateMorph(0);
+    }, 3500);
+    this.startTimer();
+    
+    
   }
 
   async sendMessage() {
@@ -331,8 +338,45 @@ export class Chat3dComponent implements OnInit, AfterViewInit {
     this.scene.applyWeights(index);
   }
 
+  startTimer() {
+    this.timerInterval = setInterval(() => {
+      if (this.seconds === 0) {
+        if (this.minutes === 0) {
+          this.stopTimer();
+        } else {
+          this.minutes--;
+          this.seconds = 59;
+        }
+      } else {
+        this.seconds--;
+      }
+    }, 1000);
+
+    this.timerTimeout = setTimeout(() => {
+      this.timerFinished();
+    }, 2 * 60 * 1000); // 2 minutos en milisegundos
+  }
+
+  stopTimer() {
+    clearInterval(this.timerInterval);
+    clearTimeout(this.timerTimeout);
+  }
+
+  timerFinished() {
+    this.stopTimer();
+    console.log('El tiempo se ha acabado!');
+    // Aquí puedes agregar cualquier lógica adicional que necesites cuando el temporizador se acabe
+  }
+
   ngOnDestroy(): void {
     this.socketService.disconnect();
+    //temporizador
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+    }
+    if (this.timerTimeout) {
+      clearTimeout(this.timerTimeout);
+    }
   }
 
 

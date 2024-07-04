@@ -20,6 +20,7 @@ export class OpenaiService {
   private audio: HTMLAudioElement | null = null;
   audioBot: HTMLAudioElement | null = null;
   private visemes: { audioOffset: number, visemeId: number }[] = [];
+  userId = "0";
 
   constructor(private http: HttpClient) { }
 
@@ -29,7 +30,9 @@ export class OpenaiService {
       const response = await this.http.post<{ text: string; audioUrl?: string; viseme: { audioOffset: number, visemeId: number }[] }>(this.apiUrl, { userId, prompt }).toPromise();
       if (response) {
         //this.audioBot = new Audio(response.audioUrl);
-        this.visemes = response.viseme || [];        
+        this.visemes = response.viseme || [];   
+        this.userId=userId;
+        
       }
       
       return response || { text: 'Lo siento, ha ocurrido un error.', viseme: [] };
@@ -96,12 +99,14 @@ export class OpenaiService {
   }
 
   // Método para procesar imágenes
-  async processImage(imageFile: File): Promise<any> {
+  async processImage(imageFile: File, userId?: string): Promise<any> {
     try {
       const formData = new FormData();
       formData.append('image', imageFile);
-      console.log("formData:"+formData);
-
+      //console.log("formData:"+formData);
+      if (userId) {
+        formData.append('userId', userId); // Incluye userId, usando el valor proporcionado o el valor por defecto       
+      }
 
       const response = await this.http.post(this.visionUrl, formData).toPromise();
       return response;
@@ -137,7 +142,7 @@ export class OpenaiService {
 
    playAudioBot() {
     const audio = new Audio();
-    audio.src = `${this.speechUrl}?_=${new Date().getTime()}`;
+    audio.src = `${this.speechUrl}?userId=${this.userId}&_=${new Date().getTime()}`; // Incluye el userId en la URL
 
     this.audioBot = audio;
     //this.audioUrl = await this.openaiService.getSpeechAudio();

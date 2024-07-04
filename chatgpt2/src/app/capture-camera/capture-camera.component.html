@@ -1,22 +1,16 @@
-   <div >
-    <div class="row m-2 p-2">
-      <div class="col-3">
-        <button type="button" class="btn btn-primary" (click)="toggleWebcam()">{{ showWebcam ? 'Ocultar' : 'Mostrar' }} Cámara</button>
-      </div>
-
-      <div class="col-4">
-        <button type="button" class="btn btn-primary"(click)="toggleCapture()" [disabled]="!showWebcam">{{ allowCapture ? 'Detener' : 'Iniciar' }} Captura Automática</button>
-
-      </div>
-    </div>
+<!-- <div class="row m-2 p-2">
+  <div class="col-3">
+    <button type="button" class="btn btn-primary" (click)="toggleCapture()">
+      {{ allowCapture ? 'Detener' : 'Iniciar' }} Captura Automática
+    </button>
   </div>
-  
-  <webcam
-    *ngIf="showWebcam"
-    [width]="200"
-    [height]="200"
-    [trigger]="trigger"
-    [allowCameraSwitch]="true"
-    [videoOptions]="videoOptions"
-    (imageCapture)="handleImageCapture($event)"
-  ></webcam>
+</div> -->
+
+<webcam
+  [width]="50"
+  [height]="50"
+  [trigger]="trigger"
+  [allowCameraSwitch]="false"
+  [videoOptions]="videoOptions"
+  (imageCapture)="handleImageCapture($event)"
+></webcam>

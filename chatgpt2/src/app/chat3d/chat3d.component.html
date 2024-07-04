@@ -1,23 +1,24 @@
 <!-- chat.component.html -->
-<h1>Chat OpenAI</h1>
-
-<div class="">
-  <div class="row " >
-    <div class="col-sm-7 col-12 px-0">
+<div class="container" style="display: flexbox;">
+  <div class="row mx-0"  >
+    <div class="col-sm-6 col-12 px-0">
       <div class="tec mx-4" >
         <div id="three-js-container"></div>
       </div>
     </div>
-
-    <div class="col-sm-5 col-12" >
-      <section >
-        <div class="container  my-2">
+ 
+    <div class="col-sm-6 col-12" >
+      <p>{{ minutes }}:{{ seconds | number: '2.0' }}</p>
+      <div >
+        <div class="container  mt-2">
             <div class="row d-flex justify-content-center">
               <!-- <div class="col-md-10 col-lg-8 col-xl-6"></div> -->
                 <div class="col">
                     <div class="card" id="chat2">
                         <div class="card-header d-flex justify-content-between align-items-center p-3">
-                            <h5 class="mb-0">Chat</h5>                      
+                            <h5 class="mb-0">Chat</h5>
+                            <app-capture-camera></app-capture-camera>
+                      
                         </div>
                         <div class="card-body chat-body overflow-auto chat-container" style="position: relative;">
                           <div *ngFor="let message of messages" class="message" [ngClass]="{'user-message': message.sender === 'user', 'bot-message': message.sender === 'bot'}">
@@ -51,20 +52,22 @@
                 </div>
             </div>
         </div>
-      </section>      
+      </div>
+      
       
     </div>
   </div>
 </div>
 
-<button (click)="ojos()"> ojos</button>
+
+
+
+<!-- <button (click)="ojos()"> ojos</button>
 <button (click)="animationArms()"> Animaciones</button>
 <button (click)="animationArms2()"> brazo 0</button>
 <button (click)="animateMorph(0)"> morph</button>
 <button (click)="animateMorph(1)"> morph2</button>
-
-
-
+ -->
 
 
 <div>

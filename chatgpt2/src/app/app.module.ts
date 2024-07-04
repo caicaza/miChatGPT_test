@@ -27,6 +27,7 @@ import { ViewGeminiComponent } from './view-gemini/view-gemini.component';
 import { ThreejsComponent } from './threejs/threejs.component';
 import { Chat3dComponent } from './chat3d/chat3d.component';
 import { WebSocketService } from './services/web-socket.service';
+import { SimuladorComponent } from './simulador/simulador.component';
 
 
 @NgModule({
@@ -46,7 +47,8 @@ import { WebSocketService } from './services/web-socket.service';
     ViewOpenAIComponent,
     ViewGeminiComponent,
     ThreejsComponent,
-    Chat3dComponent
+    Chat3dComponent,
+    SimuladorComponent
   ],
   imports: [
     BrowserModule,
@@ -68,6 +70,7 @@ import { WebSocketService } from './services/web-socket.service';
       { path: 'gemini', component: ViewGeminiComponent },    
       { path: 'threejs', component: ThreejsComponent },  
       { path: 'chat3D', component: Chat3dComponent },     
+      { path: 'simulador', component: SimuladorComponent }, 
       
     ]),
 

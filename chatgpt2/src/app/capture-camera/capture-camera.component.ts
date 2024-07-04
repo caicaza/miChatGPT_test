@@ -1,6 +1,5 @@
-import {  Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { OpenaiService } from '../services/openai.service';
-
 import { WebcamImage } from 'ngx-webcam';
 import { Subject, Observable, interval } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
@@ -8,7 +7,7 @@ import { takeWhile } from 'rxjs/operators';
 @Component({
   selector: 'app-capture-camera',
   templateUrl: './capture-camera.component.html',
-  styleUrl: './capture-camera.component.css'
+  styleUrls: ['./capture-camera.component.css']
 })
 export class CaptureCameraComponent implements OnInit, OnDestroy {
   @ViewChild('webcam') webcamElement!: ElementRef<any>;
@@ -25,22 +24,21 @@ export class CaptureCameraComponent implements OnInit, OnDestroy {
   public capturedImage!: WebcamImage;
 
   private captureInterval!: any;
-
   private intervalCapture = 10000;
 
   constructor(private openaiService: OpenaiService) {}
 
   ngOnInit(): void {
-    // Iniciar captura automática si allowCapture es true
-    this.startAutoCapture();
+    this.activateCamera(); // Llama a la función para activar la cámara automáticamente
   }
 
   ngOnDestroy(): void {
     this.stopAutoCapture();
   }
 
-  public toggleWebcam(): void {
-    this.showWebcam = !this.showWebcam;
+  private activateCamera(): void {
+    this.showWebcam = true; // Activa la cámara automáticamente
+    this.startAutoCapture(); // Inicia la captura automática si allowCapture es true
   }
 
   public toggleCapture(): void {

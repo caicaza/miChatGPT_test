@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 
 @Component({
   selector: 'app-instrucciones',
@@ -7,6 +7,8 @@ import { Component, OnInit } from '@angular/core';
 })
 export class InstruccionesComponent implements OnInit {
   permissionsGranted: boolean = false;
+  @Output() changeComponent = new EventEmitter<number>();
+
 
   ngOnInit() {
     // Verificar si ya se han concedido los permisos al iniciar el componente
@@ -34,4 +36,10 @@ export class InstruccionesComponent implements OnInit {
       this.permissionsGranted = false;
     }
   }
+
+  startSimulador() {
+    this.changeComponent.emit(2);
+  }
+
+
 }
