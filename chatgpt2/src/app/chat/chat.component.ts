@@ -27,7 +27,7 @@ export class ChatComponent implements OnInit {
 
     this.addUserMessage(this.userInput);
     try {
-      const botResponse = await this.openaiService.getChatResponse(this.user, this.userInput);
+      const botResponse = await this.openaiService.getChatResponse(this.user.id, this.userInput);
      // this.addBotMessage(botResponse);
     } catch (error) {
       console.error('Error in sendMessage:', error);

@@ -3,7 +3,7 @@ import { OpenaiService } from '../services/openai.service';
 import { VoiceRecognitionService } from '../services/voice-recognition.service';
 import { ThreeScene } from './three-scene'; // Importa la clase ThreeScene desde el archivo separado
 import { User } from '../model/user';
-
+import { WebSocketService } from '../services/web-socket.service';
 
 
 interface Viseme {
@@ -50,35 +50,32 @@ export class Chat3dComponent implements OnInit, AfterViewInit {
 
   //Para la animacion Avatar
   @ViewChild('canvas', { static: true }) canvas!: ElementRef<HTMLCanvasElement>;
-  private images: { [key: string]: HTMLImageElement } = {};
   private visemes: Viseme[] = [];
   textInput: string = '';
 
  // Escuchar el evento de redimensionar la ventana
-
   private scene: ThreeScene; 
-  constructor(private openaiService: OpenaiService, public voiceService: VoiceRecognitionService, @Inject(Window) private window: Window) { 
-    this.scene = new ThreeScene(this.window);
 
+  constructor(private openaiService: OpenaiService, public voiceService: VoiceRecognitionService, @Inject(Window) private window: Window, private socketService: WebSocketService) { 
+    this.scene = new ThreeScene(this.window);
   }
 
-  async ngOnInit(): Promise<void> {
-    
+  async ngOnInit(): Promise<void> {   
 
     //bot
     this.addBotMessage(this.mensajeInicial);
     //voice recognition
     this.getAudioDevices();
     this.voiceService.onSpeechDetected.subscribe((message: string) => {
-      console.log('Speech detected:', message);
       if (message == 'Silence') {
-        this.recognizedText = this.voiceService.getVoice();
-        console.log("voz obtenida")
-       //console.log(this.recognizedText);
+        this.recognizedText = this.voiceService.getVoice();        
         this.userInput=this.recognizedText;
         this.sendMessage();
       }
     });
+    //Socket
+    this.socketService.joinRoom(this.user.id);
+
   }
 
   async ngAfterViewInit(): Promise<void> {
@@ -87,9 +84,6 @@ export class Chat3dComponent implements OnInit, AfterViewInit {
       this.scene.setWeight_Eyes(1);
     }, 3500); 
 
-
-    //this.resizeCanvas();
-    //this.setupCanvas();
   }
 
   async sendMessage() {
@@ -99,7 +93,7 @@ export class Chat3dComponent implements OnInit, AfterViewInit {
 
     this.addUserMessage(this.userInput);
     try {
-      const botResponse = await this.openaiService.getChatResponse(this.user,this.userInput);
+      const botResponse = await this.openaiService.getChatResponse(this.user.id,this.userInput);
       this.addBotMessage(botResponse.text);
       this.audioUrl = await this.openaiService.getSpeechAudio();
       
@@ -335,6 +329,10 @@ export class Chat3dComponent implements OnInit, AfterViewInit {
 
   animateMorph(index:number){
     this.scene.applyWeights(index);
+  }
+
+  ngOnDestroy(): void {
+    this.socketService.disconnect();
   }
 
 

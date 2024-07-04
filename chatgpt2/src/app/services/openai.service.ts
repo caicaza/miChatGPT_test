@@ -24,9 +24,9 @@ export class OpenaiService {
   constructor(private http: HttpClient) { }
 
   // Método para obtener la respuesta del chat
-  async getChatResponse(user: User, prompt: string): Promise<{ text: string; audioUrl?: string; viseme: { audioOffset: number, visemeId: number }[] }> {
+  async getChatResponse( userId: string, prompt: string): Promise<{ text: string; audioUrl?: string; viseme: { audioOffset: number, visemeId: number }[] }> {
     try {
-      const response = await this.http.post<{ text: string; audioUrl?: string; viseme: { audioOffset: number, visemeId: number }[] }>(this.apiUrl, { prompt }).toPromise();
+      const response = await this.http.post<{ text: string; audioUrl?: string; viseme: { audioOffset: number, visemeId: number }[] }>(this.apiUrl, { userId, prompt }).toPromise();
       if (response) {
         //this.audioBot = new Audio(response.audioUrl);
         this.visemes = response.viseme || [];        
