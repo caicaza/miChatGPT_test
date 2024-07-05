@@ -3,6 +3,7 @@ import { OpenaiService } from '../services/openai.service';
 import { WebcamImage } from 'ngx-webcam';
 import { Subject, Observable, interval } from 'rxjs';
 import { takeWhile } from 'rxjs/operators';
+import { User } from '../model/user';
 
 @Component({
   selector: 'app-capture-camera',
@@ -13,7 +14,7 @@ export class CaptureCameraComponent implements OnInit, OnDestroy {
   @ViewChild('webcam') webcamElement!: ElementRef<any>;
 
   public showWebcam = false;
-  public allowCapture = false;
+  public allowCapture = true;
   public trigger: Subject<void> = new Subject<void>();
   public isTriggerDisabled = false;
   public videoOptions: MediaTrackConstraints = {
@@ -22,14 +23,19 @@ export class CaptureCameraComponent implements OnInit, OnDestroy {
 
   public imageCaptured = false;
   public capturedImage!: WebcamImage;
+  private isProcessing = false; // Estado de procesamiento
 
   private captureInterval!: any;
   private intervalCapture = 10000;
+
+  user: User = { id: '1234' };
+
 
   constructor(private openaiService: OpenaiService) {}
 
   ngOnInit(): void {
     this.activateCamera(); // Llama a la función para activar la cámara automáticamente
+    this.startAutoCapture();
   }
 
   ngOnDestroy(): void {
@@ -54,7 +60,7 @@ export class CaptureCameraComponent implements OnInit, OnDestroy {
     this.captureInterval = interval(this.intervalCapture).pipe(
       takeWhile(() => this.allowCapture)
     ).subscribe(() => {
-      if (this.allowCapture) {
+      if (this.allowCapture && !this.isProcessing) { // Solo captura si no está procesando
         this.triggerSnapshot();
       }
     });
@@ -78,12 +84,15 @@ export class CaptureCameraComponent implements OnInit, OnDestroy {
 
   public async sendImageToOpenAI(): Promise<void> {
     try {
+      this.isProcessing = true; // Inicia el procesamiento
       const imageFile = this.webcamImageToFile(this.capturedImage);
-      const response = await this.openaiService.processImage(imageFile);
+      const response = await this.openaiService.processImage(imageFile, this.user.id);
       console.log('Respuesta de OpenAI:', response);
       // Manejar la respuesta de OpenAI aquí
     } catch (error) {
       console.error('Error procesando imagen en OpenAI:', error);
+    } finally {
+      this.isProcessing = false; // Termina el procesamiento
     }
   }
 

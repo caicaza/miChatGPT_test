@@ -3,5 +3,9 @@
 </div>
 {{currentComponent}}
 <div *ngIf="currentComponent === 2">
-    <app-chat3d></app-chat3d>
+    <app-chat3d (changeComponent)="changeComponent($event)"></app-chat3d>
+</div>
+
+<div *ngIf="currentComponent === 3">
+    <app-respuesta></app-respuesta>
 </div>

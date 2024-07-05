@@ -101,6 +101,7 @@ export class OpenaiService {
   // Método para procesar imágenes
   async processImage(imageFile: File, userId?: string): Promise<any> {
     try {
+      console.log(userId+ "vision");
       const formData = new FormData();
       formData.append('image', imageFile);
       //console.log("formData:"+formData);
@@ -108,7 +109,7 @@ export class OpenaiService {
         formData.append('userId', userId); // Incluye userId, usando el valor proporcionado o el valor por defecto       
       }
 
-      const response = await this.http.post(this.visionUrl, formData).toPromise();
+      const response = await this.http.post( this.visionUrl, formData).toPromise();
       return response;
     } catch (error) {
       throw new Error('Error procesando imagen en OpenAI');
@@ -155,11 +156,11 @@ export class OpenaiService {
 
   //Respuesta
   // Método para evaluar al vendedor y devolver resultados en formato JSON
-  async getEvaluation(): Promise<string> {
+  async getEvaluation(userId: string): Promise<string> {
     console.log("Evaluar");
     const promptIntern: string = 'Evalua y genera JSON sobre la conversación anterior...';
   
-    const response = await this.http.post<any>(this.evaluationUrl, { promptIntern }).toPromise();
+    const response = await this.http.post<any>(this.evaluationUrl, { promptIntern, userId }).toPromise();
   
     if (!response || !response.text) {
       throw new Error('Invalid evaluation response'); // Handle unexpected response format

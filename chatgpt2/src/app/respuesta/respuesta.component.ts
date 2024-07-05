@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { OpenaiService } from '../services/openai.service';
 import { HttpClient } from '@angular/common/http';
+import { User } from '../model/user';
 
 
 // Define los tipos de feedback
@@ -22,6 +23,7 @@ export interface Evaluacion {
 })
 export class RespuestaComponent implements OnInit {
   evaluacion: Evaluacion = {} as Evaluacion; // Inicializar como un objeto vacío
+  user: User = { id: '1234' };
 
  /*  private evaluacionJson: string = `
     {
@@ -66,6 +68,7 @@ export class RespuestaComponent implements OnInit {
 
   ngOnInit(): void {
     this.evaluacion = JSON.parse(this.evaluacionJson);
+    this.evaluateVendedor();
   }
 
   objectKeys(obj: any): string[] {
@@ -136,7 +139,7 @@ export class RespuestaComponent implements OnInit {
 
   async evaluateVendedor() {
     try {
-      const response = await this.openaiService.getEvaluation();
+      const response = await this.openaiService.getEvaluation(this.user.id);
       this.evaluacion = JSON.parse(response);
 
       

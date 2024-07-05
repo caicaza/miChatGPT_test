@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild, HostListener, Inject } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild, HostListener, Inject, Output, EventEmitter } from '@angular/core';
 import { OpenaiService } from '../services/openai.service';
 import { VoiceRecognitionService } from '../services/voice-recognition.service';
 import { ThreeScene } from './three-scene'; // Importa la clase ThreeScene desde el archivo separado
@@ -29,7 +29,7 @@ export class Chat3dComponent implements OnInit, AfterViewInit {
   selectedFile: File | null = null;
   audioUrl: string | null = null;
   //Temporizador
-  minutes: number = 2;
+  minutes: number = 1;
   seconds: number = 0;
   private timerInterval: any;
   private timerTimeout: any;
@@ -53,6 +53,8 @@ export class Chat3dComponent implements OnInit, AfterViewInit {
   @ViewChild('canvas', { static: true }) canvas!: ElementRef<HTMLCanvasElement>;
   private visemes: Viseme[] = [];
   textInput: string = '';
+
+  @Output() changeComponent = new EventEmitter<number>();
 
  // Escuchar el evento de redimensionar la ventana
   private scene: ThreeScene; 
@@ -81,14 +83,14 @@ export class Chat3dComponent implements OnInit, AfterViewInit {
 
   async ngAfterViewInit(): Promise<void> {
     await this.scene.init('three-js-container');
-    setInterval(() => {
+    await setInterval(() => {
       this.scene.setWeight_Eyes(1);
     }, 3500); 
     //Emocion de alegria
-    setTimeout(() => {
+     setTimeout(() => {
       this.animateMorph(0);
     }, 3500);
-    this.startTimer();
+     this.startTimer();
     
     
   }
@@ -343,6 +345,7 @@ export class Chat3dComponent implements OnInit, AfterViewInit {
       if (this.seconds === 0) {
         if (this.minutes === 0) {
           this.stopTimer();
+          this.timerFinished();
         } else {
           this.minutes--;
           this.seconds = 59;
@@ -350,22 +353,24 @@ export class Chat3dComponent implements OnInit, AfterViewInit {
       } else {
         this.seconds--;
       }
+      console.log(this.minutes, this.seconds);
     }, 1000);
-
-    this.timerTimeout = setTimeout(() => {
-      this.timerFinished();
-    }, 2 * 60 * 1000); // 2 minutos en milisegundos
   }
 
   stopTimer() {
-    clearInterval(this.timerInterval);
-    clearTimeout(this.timerTimeout);
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+    }
   }
 
   timerFinished() {
     this.stopTimer();
     console.log('El tiempo se ha acabado!');
+    this.mostrarResultados();
     // Aquí puedes agregar cualquier lógica adicional que necesites cuando el temporizador se acabe
+  }
+  mostrarResultados() {
+    this.changeComponent.emit(3);
   }
 
   ngOnDestroy(): void {
